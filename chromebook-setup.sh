@@ -101,12 +101,9 @@ echo "Available commands:
   build_kernel
     Compile the Linux kernel and install the modules on the rootfs.
 
-  build_vboot [ROOT]
+  build_vboot
     Build vboot and install it along with the kernel main image on the
-    boot partition of the storage device.  The optional ROOT argument
-    is the root device to pass to the kernel, by default the standard
-    one for SD cards:
-        $ROOT_DEFAULT
+    boot partition of the storage device.
 
 For example, to do everything for the ASUS Chromebook Flip C100PA:
 
