@@ -1,8 +1,14 @@
 # chromebook-config.sh - Configuration file for chromebook-setup
 
+# default rootfs and toolchain (arm)
 DEBIAN_ROOTFS_URL="http://releases.linaro.org/debian/images/developer-armhf/17.01/linaro-jessie-developer-20161117-32.tar.gz"
 TOOLCHAIN="gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabihf"
 TOOLCHAIN_URL="http://releases.linaro.org/components/toolchain/binaries/4.9-2017.01/arm-linux-gnueabihf/$TOOLCHAIN.tar.xz"
+# arm64 rootfs and toolchain
+ARM64_DEBIAN_ROOTFS_URL="http://releases.linaro.org/debian/images/developer-arm64/17.01/linaro-jessie-developer-20161214-98.tar.gz"
+ARM64_TOOLCHAIN="gcc-linaro-6.3.1-2017.05-x86_64_aarch64-linux-gnu"
+ARM64_TOOLCHAIN_URL="http://releases.linaro.org/components/toolchain/binaries/6.3-2017.05/aarch64-linux-gnu/$ARM64_TOOLCHAIN.tar.xz"
+
 KERNEL_URL="git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git"
 ROOTFS_DIR="$PWD/ROOT-A"
 ROOT_DEFAULT="/dev/mmcblk1p2"
@@ -15,6 +21,7 @@ CWD=$PWD
 declare -A chromebook_names=(
     ["C100PA"]="ASUS Chromebook Flip C100PA"
     ["NBCJ2"]="CTL J2 Chromebook for Education"
+    ["XE513C24"]="Samsung Chromebook Plus"
 )
 
 # Function to retrieve keys/values from associative array using indirection.

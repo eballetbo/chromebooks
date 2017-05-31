@@ -23,7 +23,7 @@ print_usage_exit()
     local arg_ret="${1-1}"
 
     echo "
-ARM Chromebook developer tool.
+ARM/ARM64 Chromebook developer tool.
 
 Environment variables:
 
@@ -45,15 +45,17 @@ Usage:
 Options:
 
   The following options are common to all commands.  Only --storage
-  and --variant are compulsory, the --mali option has a default value
-  to use the latest driver available.
+  and --architecture are compulsory.
 
   --storage=PATH
     Path to the Chromebook storage device i.e. the SD card.
 "
-echo "  --variant=VARIANT
-    Chromebook variant, needs to be one of the following:"
+echo "  --architecture=ARCH
+    Chromebook architecture, needs to be one of the following: arm | arm64"
 
+echo "Supported devices:
+
+"
 for chromebook_variant in "${!chromebook_names[@]}"
 do
     echo "      $chromebook_variant (${chromebook_names[$chromebook_variant]})"
@@ -105,15 +107,15 @@ echo "Available commands:
     Build vboot and install it along with the kernel main image on the
     boot partition of the storage device.
 
-For example, to do everything for the ASUS Chromebook Flip C100PA:
+For example, to do everything for the ASUS Chromebook Flip C100PA (arm):
 
-  $0 do_everything --variant=C100PA --storage=/dev/sdX
+  $0 do_everything --architecture=arm --storage=/dev/sdX
 "
 
     exit $arg_ret
 }
 
-opts=$(getopt -o "s:" -l "storage:,variant:" -- "$@")
+opts=$(getopt -o "s:" -l "storage:,architecture:" -- "$@")
 eval set -- "$opts"
 
 while true; do
@@ -122,8 +124,8 @@ while true; do
             CB_SETUP_STORAGE="$2"
             shift 2
             ;;
-        --variant)
-            CB_SETUP_VARIANT="$2"
+        --architecture)
+            CB_SETUP_ARCH="$2"
             shift 2
             ;;
         --)
@@ -149,17 +151,23 @@ shift
     print_usage_exit
 }
 
-if [ -z "${chromebook_names[$CB_SETUP_VARIANT]}" ]; then
-    echo "Unknown Chromebook variant passed to the --variant option."
+[ "$CB_SETUP_ARCH" = "arm" ] || [ "$CB_SETUP_ARCH" == "arm64" ] || {
+    echo "Incorrect architecture device passed to the --architecture option."
     print_usage_exit
+}
+
+if [ "$CB_SETUP_ARCH" == "arm64" ]; then
+    DEBIAN_ROOTFS_URL="$ARM64_DEBIAN_ROOTFS_URL"
+    TOOLCHAIN="$ARM64_TOOLCHAIN"
+    TOOLCHAIN_URL="$ARM64_TOOLCHAIN_URL"
+    [ -z "$CROSS_COMPILE" ] && export CROSS_COMPILE=\
+$PWD/$TOOLCHAIN/bin/aarch64-linux-gnu-
 else
-    echo "Configured for ${chromebook_names[$CB_SETUP_VARIANT]}"
+    [ -z "$CROSS_COMPILE" ] && export CROSS_COMPILE=\
+$PWD/$TOOLCHAIN/bin/arm-linux-gnueabihf-
 fi
 
-[ -z "$CROSS_COMPILE" ] && export CROSS_COMPILE=\
-$PWD/$TOOLCHAIN/bin/arm-linux-gnueabihf-
-
-export ARCH=arm
+export ARCH=$CB_SETUP_ARCH
 
 # -----------------------------------------------------------------------------
 # Utility functions
@@ -167,6 +175,101 @@ export ARCH=arm
 jopt()
 {
     echo "-j"$(grep -c processor /proc/cpuinfo)
+}
+
+arm_boot_image_blob()
+{
+    # Make boot image blob
+    local kernel_its="/dts-v1/;
+    / {
+    description = \"Chrome OS kernel image with one or more FDT blobs\";
+    #address-cells = <1>;
+    images {
+        kernel@1{
+            description = \"kernel (arm)\";
+            data = /incbin/(\"arch/arm/boot/zImage\");
+            type = \"kernel\";
+            arch = \"arm\";
+            os = \"linux\";
+            compression = \"none\";
+        };
+        fdt@1{
+            description = \"RK3288 Veyron Minnie\";
+            data = /incbin/(\"arch/arm/boot/dts/rk3288-veyron-minnie.dtb\");
+            type = \"flat_dt\";
+            arch = \"arm\";
+            compression = \"none\";
+            fdt-version = <1>;
+        };
+        fdt@2{
+            description = \"RK3288 Veyron Jerry\";
+            data = /incbin/(\"arch/arm/boot/dts/rk3288-veyron-jerry.dtb\");
+            type = \"flat_dt\";
+            arch = \"arm\";
+            compression = \"none\";
+            fdt-version = <1>;
+        };
+    };
+    configurations {
+        default = \"conf@1\";
+        conf@1{
+            kernel = \"kernel@1\";
+            fdt = \"fdt@1\";
+        };
+        conf@2{
+            kernel = \"kernel@1\";
+            fdt = \"fdt@2\";
+        };
+      };
+    };"
+
+    echo "$kernel_its" > kernel.its
+
+    mkimage -f kernel.its kernel.itb
+}
+
+arm64_boot_image_blob()
+{
+    # Compress image
+    rm -f arch/arm64/boot/Image.lz4 || true
+    lz4 arch/arm64/boot/Image arch/arm64/boot/Image.lz4
+
+    # Make boot image blob
+    local kernel_its="/dts-v1/;
+    / {
+        description = \"Chrome OS kernel image with one or more FDT blobs\";
+        #address-cells = <1>;
+
+        images {
+                kernel@1{
+                        description = \"kernel (arm64)\";
+                        data = /incbin/(\"arch/arm64/boot/Image.lz4\");
+                        type = \"kernel_noload\";
+                        arch = \"arm64\";
+                        os = \"linux\";
+                        compression = \"lz4\";
+                };
+                fdt@1{
+                        description = \"rk3399-gru-kevin\";
+                        data = /incbin/(\"arch/arm64/boot/dts/rockchip/rk3399-gru-kevin.dtb\");
+                        type = \"flat_dt\";
+                        arch = \"arm64\";
+                        compression = \"none\";
+                        fdt-version = <1>;
+                };
+        };
+        configurations {
+                default = \"conf@1\";
+                conf@1{
+                        kernel = \"kernel@1\";
+                        fdt = \"fdt@1\";
+                };
+        };
+    };"
+
+    echo "$kernel_its" > kernel.its
+
+    mkimage -f kernel.its kernel.itb
 }
 
 # -----------------------------------------------------------------------------
@@ -268,9 +371,12 @@ cmd_config_kernel()
     cd kernel
 
     # Create .config
-    scripts/kconfig/merge_config.sh -m arch/arm/configs/multi_v7_defconfig $CWD/fragments/multi-v7/veyron.cfg
-
-    make olddefconfig
+    if [ "$CB_SETUP_ARCH" == "arm" ]; then
+        scripts/kconfig/merge_config.sh -m arch/arm/configs/multi_v7_defconfig $CWD/fragments/multi-v7/veyron.cfg
+        make olddefconfig
+    else
+        make defconfig
+    fi
 
     cd - > /dev/null
 
@@ -284,57 +390,16 @@ cmd_build_kernel()
     cd kernel
 
     # Build kernel + modules + device tree blob
-    make zImage modules dtbs $(jopt)
-
-    # Make boot image blob
-    local kernel_its="/dts-v1/;
-    / {
-    description = \"Chrome OS kernel image with one or more FDT blobs\";
-    #address-cells = <1>;
-    images {
-        kernel@1{
-            description = \"kernel (arm)\";
-            data = /incbin/(\"arch/arm/boot/zImage\");
-            type = \"kernel\";
-            arch = \"arm\";
-            os = \"linux\";
-            compression = \"none\";
-        };
-        fdt@1{
-            description = \"RK3288 Veyron Minnie\";
-            data = /incbin/(\"arch/arm/boot/dts/rk3288-veyron-minnie.dtb\");
-            type = \"flat_dt\";
-            arch = \"arm\";
-            compression = \"none\";
-            fdt-version = <1>;
-        };
-        fdt@2{
-            description = \"RK3288 Veyron Jerry\";
-            data = /incbin/(\"arch/arm/boot/dts/rk3288-veyron-jerry.dtb\");
-            type = \"flat_dt\";
-            arch = \"arm\";
-            compression = \"none\";
-            fdt-version = <1>;
-        };
-    };
-    configurations {
-        default = \"conf@1\";
-        conf@1{
-            kernel = \"kernel@1\";
-            fdt = \"fdt@1\";
-        };
-        conf@2{
-            kernel = \"kernel@1\";
-            fdt = \"fdt@2\";
-        };
-      };
-    };"
-
-    echo "$kernel_its" > kernel.its
-    mkimage -f kernel.its kernel.itb
+    if [ "$CB_SETUP_ARCH" == "arm" ]; then
+        make zImage modules dtbs $(jopt)
+        arm_boot_image_blob
+    else
+        make
+        arm64_boot_image_blob
+    fi
 
     # Install the kernel modules on the rootfs
-    sudo make modules_install ARCH=arm INSTALL_MOD_PATH=$CWD/ROOT-A
+    sudo make modules_install ARCH=$CB_SETUP_ARCH INSTALL_MOD_PATH=$CWD/ROOT-A
 
     cd - > /dev/null
 
@@ -346,7 +411,7 @@ cmd_build_vboot()
     # TODO: check vboot-utils is installed
 
     # Install it on the boot partition
-    echo "console=ttyS2,115200n8 console=tty1 init=/sbin/init root=PARTUUID=%U/PARTNROFF=1 rootwait rw noinitrd" > boot_params
+    echo "console=ttyS2,115200n8 console=tty1 no_console_suspend init=/sbin/init root=PARTUUID=%U/PARTNROFF=1 rootwait rw noinitrd" > boot_params
     local boot="$CB_SETUP_STORAGE"1
     sudo vbutil_kernel --pack "$boot" --keyblock /usr/share/vboot/devkeys/kernel.keyblock --version 1 --signprivate /usr/share/vboot/devkeys/kernel_data_key.vbprivk --bootloader boot_params --config boot_params --vmlinuz kernel/kernel.itb --arch arm
 
