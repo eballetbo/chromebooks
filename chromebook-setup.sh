@@ -411,7 +411,7 @@ cmd_build_vboot()
     # TODO: check vboot-utils is installed
 
     # Install it on the boot partition
-    echo "console=ttyS2,115200n8 console=tty1 no_console_suspend init=/sbin/init root=PARTUUID=%U/PARTNROFF=1 rootwait rw noinitrd" > boot_params
+    echo "console=ttyS2,115200n8 console=tty1 init=/sbin/init root=PARTUUID=%U/PARTNROFF=1 rootwait rw noinitrd" > boot_params
     local boot="$CB_SETUP_STORAGE"1
     sudo vbutil_kernel --pack "$boot" --keyblock /usr/share/vboot/devkeys/kernel.keyblock --version 1 --signprivate /usr/share/vboot/devkeys/kernel_data_key.vbprivk --bootloader boot_params --config boot_params --vmlinuz kernel/kernel.itb --arch arm
 
