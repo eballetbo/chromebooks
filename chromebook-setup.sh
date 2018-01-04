@@ -375,7 +375,8 @@ cmd_config_kernel()
         scripts/kconfig/merge_config.sh -m arch/arm/configs/multi_v7_defconfig $CWD/fragments/multi-v7/veyron.cfg
         make olddefconfig
     else
-        make defconfig
+        scripts/kconfig/merge_config.sh -m arch/arm64/configs/defconfig $CWD/fragments/arm64/chromebooks.cfg
+        make olddefconfig
     fi
 
     cd - > /dev/null
