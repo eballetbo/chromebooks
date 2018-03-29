@@ -74,13 +74,14 @@ echo "Available commands:
     stick on the Chromebook.  The device passed to the --storage
     option is used.
 
+  mount_rootfs
+    Mount the root partition in a local rootfs directory.  The partition
+    will remain mounted in order to run other commands.
+
   setup_rootfs [ARCHIVE]
     Install the rootfs on the storage device specified with --storage.
-    The root partition will first be mounted in a local rootfs
-    directory, then the rootfs archive will be extracted onto it.  If
-    ARCHIVE is not provided then the default one will be automatically
-    downloaded and used.  The partition will then remain mounted in
-    order to run other commands.  The standard rootfs URL is:
+    If ARCHIVE is not provided then the default one will be automatically
+    downloaded and used.  The standard rootfs URL is:
         $DEBIAN_ROOTFS_URL
 
   get_toolchain
@@ -318,16 +319,21 @@ cmd_format_storage()
     echo "Done."
 }
 
-cmd_setup_rootfs()
+cmd_mount_rootfs()
 {
-    local debian_url="${1:-$DEBIAN_ROOTFS_URL}"
-    local debian_archive=$(basename $debian_url)
-
     echo "Mounting rootfs partition in $ROOTFS_DIR"
     local part="$CB_SETUP_STORAGE"2
     mkdir -p "$ROOTFS_DIR"
     sudo umount "$ROOTFS_DIR" || true
     sudo mount "$part" "$ROOTFS_DIR"
+
+    echo "Done."
+}
+
+cmd_setup_rootfs()
+{
+    local debian_url="${1:-$DEBIAN_ROOTFS_URL}"
+    local debian_archive=$(basename $debian_url)
 
     # Download the Debian rootfs archive if it's not already there.
     if [ ! -f "$debian_archive" ]; then
@@ -446,6 +452,7 @@ cmd_deploy_vboot()
 cmd_do_everything()
 {
     cmd_format_storage
+    cmd_mount_rootfs
     cmd_setup_rootfs
     cmd_get_toolchain
     cmd_get_kernel
