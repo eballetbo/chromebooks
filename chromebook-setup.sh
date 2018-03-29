@@ -114,6 +114,9 @@ echo "Available commands:
     Install the kernel vboot image on the boot partition of the storage
     device.
 
+  eject_storage
+    Eject removable media.
+
 Commands useful for development workflow:
 
   deploy_kernel
@@ -455,6 +458,14 @@ cmd_deploy_vboot()
     echo "Done."
 }
 
+cmd_eject_storage()
+{
+    echo "Ejecting storage device..."
+    sync
+    sudo eject "$CB_SETUP_STORAGE"
+    echo "All done."
+}
+
 cmd_do_everything()
 {
     cmd_format_storage
@@ -467,11 +478,7 @@ cmd_do_everything()
     cmd_deploy_kernel_modules
     cmd_build_vboot
     cmd_deploy_vboot
-
-    echo "Ejecting storage device..."
-    sync
-    sudo eject "$CB_SETUP_STORAGE"
-    echo "All done."
+    cmd_eject_storage
 }
 
 # -----------------------------------------------------------------------------
@@ -484,11 +491,7 @@ cmd_deploy_kernel()
     cmd_deploy_kernel_modules
     cmd_build_vboot
     cmd_deploy_vboot
-
-    echo "Ejecting storage device..."
-    sync
-    sudo eject "$CB_SETUP_STORAGE"
-    echo "All done."
+    cmd_eject_storage
 }
 
 # Run the command if it's valid, otherwise abort
