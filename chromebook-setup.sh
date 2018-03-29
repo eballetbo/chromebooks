@@ -101,7 +101,10 @@ echo "Available commands:
     Configure the Linux kernel.
 
   build_kernel
-    Compile the Linux kernel and install the modules on the rootfs.
+    Compile the Linux kernel modules.
+
+  deploy_kernel_modules
+    Install the Linux kernel modules on the rootfs.
 
   build_vboot
     Build vboot and install it along with the kernel main image on the
@@ -399,6 +402,15 @@ cmd_build_kernel()
         arm64_boot_image_blob
     fi
 
+    cd - > /dev/null
+
+    echo "Done."
+}
+
+cmd_deploy_kernel_modules()
+{
+    cd kernel
+
     # Install the kernel modules on the rootfs
     sudo make modules_install ARCH=$CB_SETUP_ARCH INSTALL_MOD_PATH=$CWD/ROOT-A
 
@@ -427,6 +439,7 @@ cmd_do_everything()
     cmd_get_kernel
     cmd_config_kernel
     cmd_build_kernel
+    cmd_deploy_kernel_modules
     cmd_build_vboot
 
     echo "Ejecting storage device..."
