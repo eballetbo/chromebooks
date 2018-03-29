@@ -48,7 +48,9 @@ Options:
   and --architecture are compulsory.
 
   --storage=PATH
-    Path to the Chromebook storage device i.e. the SD card.
+    Path to the Chromebook storage device or directory i.e.
+      /dev/sdb for the SD card.
+      /srv/nfs/rootfs for a NFS mount point.
 "
 echo "  --architecture=ARCH
     Chromebook architecture, needs to be one of the following: arm | arm64"
@@ -123,9 +125,15 @@ Commands useful for development workflow:
     Compile the Linux kernel, its modules, the vboot image and deploy all
     on the storage device.
 
-For example, to do everything for the ASUS Chromebook Flip C100PA (arm):
+For example, to do everything on a SD card for the ASUS Chromebook Flip
+C100PA (arm):
 
   $0 do_everything --architecture=arm --storage=/dev/sdX
+
+or to do the same to use NFS for the root filesystem:
+
+  $0 do_everything --architecture=arm --storage=/srv/nfs/nfsroot
+
 "
 
     exit $arg_ret
@@ -162,10 +170,18 @@ shift
 # -----------------------------------------------------------------------------
 # Options sanitising
 
-[ -n "$CB_SETUP_STORAGE" ] && [ -b "$CB_SETUP_STORAGE" ] || {
-    echo "Incorrect storage device passed to the --storage option."
+[ -n "$CB_SETUP_STORAGE" ] || {
+    echo "Incorrect path/storage device passed to the --storage option."
     print_usage_exit
 }
+
+if [ -b "$CB_SETUP_STORAGE" ]; then
+    storage_is_media_device=true
+else
+    storage_is_media_device=false
+    # Overwrite default ROOTFS_DIR
+    ROOTFS_DIR="$CB_SETUP_STORAGE"
+fi
 
 [ "$CB_SETUP_ARCH" = "arm" ] || [ "$CB_SETUP_ARCH" == "arm64" ] || {
     echo "Incorrect architecture device passed to the --architecture option."
@@ -298,6 +314,9 @@ cmd_help()
 
 cmd_format_storage()
 {
+    # Skip this command if is not a media device.
+    if ! $storage_is_media_device; then return 0; fi
+
     echo "Creating partitions on $CB_SETUP_STORAGE"
     df 2>&1 | grep "$CB_SETUP_STORAGE" || true
     read -p "Continue? [N/y] " yn
@@ -330,6 +349,9 @@ cmd_format_storage()
 
 cmd_mount_rootfs()
 {
+    # Skip this command if is not a media device.
+    if ! $storage_is_media_device; then return 0; fi
+
     echo "Mounting rootfs partition in $ROOTFS_DIR"
     local part="$CB_SETUP_STORAGE"2
     mkdir -p "$ROOTFS_DIR"
@@ -430,7 +452,7 @@ cmd_deploy_kernel_modules()
     cd kernel
 
     # Install the kernel modules on the rootfs
-    sudo make modules_install ARCH=$CB_SETUP_ARCH INSTALL_MOD_PATH=$CWD/ROOT-A
+    sudo make modules_install ARCH=$CB_SETUP_ARCH INSTALL_MOD_PATH=$ROOTFS_DIR
 
     cd - > /dev/null
 
@@ -451,15 +473,22 @@ cmd_build_vboot()
 
 cmd_deploy_vboot()
 {
-    # Install it on the boot partition
-    local boot="$CB_SETUP_STORAGE"1
-    sudo dd if=kernel/kernel.vboot of="$boot" bs=4M
+    if $storage_is_media_device; then
+        # Install it on the boot partition
+        local boot="$CB_SETUP_STORAGE"1
+        sudo dd if=kernel/kernel.vboot of="$boot" bs=4M
+    else
+        sudo cp -av kernel/kernel.itb "$ROOTFS_DIR/boot"
+    fi
 
     echo "Done."
 }
 
 cmd_eject_storage()
 {
+    # Skip this command if is not a media device.
+    if ! $storage_is_media_device; then return 0; fi
+
     echo "Ejecting storage device..."
     sync
     sudo eject "$CB_SETUP_STORAGE"
