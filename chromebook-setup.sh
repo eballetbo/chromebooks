@@ -114,6 +114,12 @@ echo "Available commands:
     Install the kernel vboot image on the boot partition of the storage
     device.
 
+Commands useful for development workflow:
+
+  deploy_kernel
+    Compile the Linux kernel, its modules, the vboot image and deploy all
+    on the storage device.
+
 For example, to do everything for the ASUS Chromebook Flip C100PA (arm):
 
   $0 do_everything --architecture=arm --storage=/dev/sdX
@@ -457,6 +463,23 @@ cmd_do_everything()
     cmd_get_toolchain
     cmd_get_kernel
     cmd_config_kernel
+    cmd_build_kernel
+    cmd_deploy_kernel_modules
+    cmd_build_vboot
+    cmd_deploy_vboot
+
+    echo "Ejecting storage device..."
+    sync
+    sudo eject "$CB_SETUP_STORAGE"
+    echo "All done."
+}
+
+# -----------------------------------------------------------------------------
+# Commands for development workflow
+
+cmd_deploy_kernel()
+{
+    cmd_mount_rootfs
     cmd_build_kernel
     cmd_deploy_kernel_modules
     cmd_build_vboot
