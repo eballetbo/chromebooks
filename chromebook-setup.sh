@@ -107,8 +107,11 @@ echo "Available commands:
     Install the Linux kernel modules on the rootfs.
 
   build_vboot
-    Build vboot and install it along with the kernel main image on the
-    boot partition of the storage device.
+    Build vboot image.
+
+  deploy_vboot
+    Install the kernel vboot image on the boot partition of the storage
+    device.
 
 For example, to do everything for the ASUS Chromebook Flip C100PA (arm):
 
@@ -425,8 +428,17 @@ cmd_build_vboot()
 
     # Install it on the boot partition
     echo "console=ttyS2,115200n8 console=tty1 init=/sbin/init root=PARTUUID=%U/PARTNROFF=1 rootwait rw noinitrd" > boot_params
-    local boot="$CB_SETUP_STORAGE"1
+    local boot=kernel/kernel.vboot
     sudo vbutil_kernel --pack "$boot" --keyblock /usr/share/vboot/devkeys/kernel.keyblock --version 1 --signprivate /usr/share/vboot/devkeys/kernel_data_key.vbprivk --bootloader boot_params --config boot_params --vmlinuz kernel/kernel.itb --arch arm
+
+    echo "Done."
+}
+
+cmd_deploy_vboot()
+{
+    # Install it on the boot partition
+    local boot="$CB_SETUP_STORAGE"1
+    sudo dd if=kernel/kernel.vboot of="$boot" bs=4M
 
     echo "Done."
 }
@@ -441,6 +453,7 @@ cmd_do_everything()
     cmd_build_kernel
     cmd_deploy_kernel_modules
     cmd_build_vboot
+    cmd_deploy_vboot
 
     echo "Ejecting storage device..."
     sync
