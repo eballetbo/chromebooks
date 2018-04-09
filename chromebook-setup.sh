@@ -415,7 +415,7 @@ cmd_config_kernel()
 
     # Create .config
     if [ "$CB_SETUP_ARCH" == "arm" ]; then
-        scripts/kconfig/merge_config.sh -m arch/arm/configs/multi_v7_defconfig $CWD/fragments/multi-v7/veyron.cfg
+        scripts/kconfig/merge_config.sh -m arch/arm/configs/multi_v7_defconfig $CWD/fragments/multi-v7/chromebooks.cfg
         make olddefconfig
     else
         scripts/kconfig/merge_config.sh -m arch/arm64/configs/defconfig $CWD/fragments/arm64/chromebooks.cfg
