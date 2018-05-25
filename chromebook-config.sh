@@ -2,12 +2,12 @@
 
 # default rootfs and toolchain (arm)
 DEBIAN_ROOTFS_URL="https://people.collabora.com/~eballetbo/debian/images/debian-stretch-chromebook-armhf.tar.gz"
-TOOLCHAIN="gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabihf"
-TOOLCHAIN_URL="http://releases.linaro.org/components/toolchain/binaries/4.9-2017.01/arm-linux-gnueabihf/$TOOLCHAIN.tar.xz"
+TOOLCHAIN="gcc-linaro-7.2.1-2017.11-x86_64_arm-linux-gnueabihf"
+TOOLCHAIN_URL="http://releases.linaro.org/components/toolchain/binaries/7.2-2017.11/arm-linux-gnueabihf/$TOOLCHAIN.tar.xz"
 # arm64 rootfs and toolchain
 ARM64_DEBIAN_ROOTFS_URL="https://people.collabora.com/~eballetbo/debian/images/debian-stretch-chromebook-arm64.tar.gz"
-ARM64_TOOLCHAIN="gcc-linaro-6.3.1-2017.05-x86_64_aarch64-linux-gnu"
-ARM64_TOOLCHAIN_URL="http://releases.linaro.org/components/toolchain/binaries/6.3-2017.05/aarch64-linux-gnu/$ARM64_TOOLCHAIN.tar.xz"
+ARM64_TOOLCHAIN="gcc-linaro-7.2.1-2017.11-x86_64_aarch64-linux-gnu"
+ARM64_TOOLCHAIN_URL="http://releases.linaro.org/components/toolchain/binaries/7.2-2017.11/aarch64-linux-gnu/$ARM64_TOOLCHAIN.tar.xz"
 
 KERNEL_URL="git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git"
 ROOTFS_DIR="$PWD/ROOT-A"
