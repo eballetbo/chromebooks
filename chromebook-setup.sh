@@ -374,7 +374,7 @@ cmd_setup_rootfs()
 
     # Untar the rootfs archive.
     echo "Extracting files onto the partition"
-    sudo tar xf "$debian_archive" -C "$ROOTFS_DIR" binary --strip=1
+    sudo tar xf "$debian_archive" -C "$ROOTFS_DIR"
 
     echo "Done."
 }
