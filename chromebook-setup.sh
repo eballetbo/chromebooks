@@ -379,7 +379,7 @@ cmd_format_storage()
     }
 
     # Unmount any partitions automatically mounted
-    sudo umount "$CB_SETUP_STORAGE"? || true
+    sudo umount "$CB_SETUP_STORAGE"? > /dev/null 2>&1 || true
 
     # Clear the partition table
     sudo sgdisk -Z "$CB_SETUP_STORAGE"
@@ -413,7 +413,7 @@ cmd_mount_rootfs()
 
     echo "Mounting rootfs partition..."
 
-    udisksctl mount -b "$CB_SETUP_STORAGE2" || true
+    udisksctl mount -b "$CB_SETUP_STORAGE2" > /dev/null 2>&1 || true
     ROOTFS_DIR=`findmnt -n -o TARGET --source $CB_SETUP_STORAGE2`
 
     # Verify that the disk is mounted, otherwise exit
@@ -551,7 +551,7 @@ cmd_eject_storage()
     echo "Ejecting storage device..."
 
     udisksctl unmount -b "$CB_SETUP_STORAGE2"
-    udisksctl power-off -b "$CB_SETUP_STORAGE" || true
+    udisksctl power-off -b "$CB_SETUP_STORAGE" > /dev/null 2>&1 || true
 
     echo "All done."
 }
