@@ -455,11 +455,12 @@ cmd_get_toolchain()
 
 cmd_get_kernel()
 {
+    echo "Creating initial git repository if not already present..."
+
     local arg_url="${1-$KERNEL_URL}"
 
     # Create initial git repository if not already present
     [ -d kernel ] || {
-        echo "Getting kernel repository"
         git clone "$arg_url" kernel
     }
 
@@ -472,6 +473,8 @@ cmd_get_kernel()
 
 cmd_config_kernel()
 {
+    echo "Configure the kernel..."
+
     cd kernel
 
     # Create .config
@@ -490,6 +493,8 @@ cmd_config_kernel()
 
 cmd_build_kernel()
 {
+    echo "Build kernel, modules and the device tree blob..."
+
     cd kernel
 
     # Build kernel + modules + device tree blob
@@ -508,6 +513,8 @@ cmd_build_kernel()
 
 cmd_deploy_kernel_modules()
 {
+    echo "Deploy the kernel modules on the rootfs..."
+
     cd kernel
 
     # Install the kernel modules on the rootfs
@@ -520,6 +527,8 @@ cmd_deploy_kernel_modules()
 
 cmd_build_vboot()
 {
+    echo "Sign the kernels to boot with Chrome OS devices..."
+
     # Install it on the boot partition
     echo "console=ttyS2,115200n8 console=tty1 init=/sbin/init root=PARTUUID=%U/PARTNROFF=1 rootwait rw noinitrd" > boot_params
     local boot=kernel/kernel.vboot
@@ -530,6 +539,8 @@ cmd_build_vboot()
 
 cmd_deploy_vboot()
 {
+    echo "Deploy vboot image on the boot partition..."
+
     if $storage_is_media_device; then
         find_partitions_by_id
 
