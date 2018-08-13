@@ -11,7 +11,6 @@ ARM64_TOOLCHAIN_URL="http://releases.linaro.org/components/toolchain/binaries/7.
 
 KERNEL_URL="git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git"
 ROOTFS_DIR="$PWD/ROOT-A"
-ROOT_DEFAULT="/dev/mmcblk1p2"
 
 # Current Working Directory
 CWD=$PWD
