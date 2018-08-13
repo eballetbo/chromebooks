@@ -207,6 +207,14 @@ jopt()
     echo "-j"$(grep -c processor /proc/cpuinfo)
 }
 
+ensure_command() {
+    # ensure_command foo foo-package
+    sudo which "$1" 2>/dev/null 1>/dev/null || (
+        echo "Install required command $1 from package $2, e.g. sudo apt-get install $2"
+        exit 1
+    )
+}
+
 find_partitions_by_id()
 {
     unset CB_SETUP_STORAGE1 CB_SETUP_STORAGE2
@@ -482,8 +490,6 @@ cmd_config_kernel()
 
 cmd_build_kernel()
 {
-    # TODO: check vboot-utils is installed
-
     cd kernel
 
     # Build kernel + modules + device tree blob
@@ -514,8 +520,6 @@ cmd_deploy_kernel_modules()
 
 cmd_build_vboot()
 {
-    # TODO: check vboot-utils is installed
-
     # Install it on the boot partition
     echo "console=ttyS2,115200n8 console=tty1 init=/sbin/init root=PARTUUID=%U/PARTNROFF=1 rootwait rw noinitrd" > boot_params
     local boot=kernel/kernel.vboot
@@ -579,6 +583,17 @@ cmd_deploy_kernel()
     cmd_deploy_vboot
     cmd_eject_storage
 }
+
+# These commands are required
+ensure_command curl curl
+ensure_command findmnt util-linux
+ensure_command realpath realpath
+ensure_command sgdisk gdisk
+ensure_command mkfs.ext4 e2fsprogs
+ensure_command mkimage u-boot-tools
+ensure_command udisksctl udisks2
+ensure_command vbutil_kernel vboot-utils
+ensure_command wget wget
 
 # Run the command if it's valid, otherwise abort
 type cmd_$cmd > /dev/null 2>&1 || print_usage_exit
