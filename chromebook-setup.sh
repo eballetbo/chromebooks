@@ -209,6 +209,53 @@ jopt()
     echo "-j"$(grep -c processor /proc/cpuinfo)
 }
 
+find_partitions_by_id()
+{
+    unset CB_SETUP_STORAGE1 CB_SETUP_STORAGE2
+
+    for device in /dev/disk/by-id/*; do
+        if [ `realpath $device` = $CB_SETUP_STORAGE ]; then
+            if echo "$device" | grep -q -- "-part[0-9]*$"; then
+                echo "device $MMC must not be a partition part ($device)" 1>&2
+                exit 1
+            fi
+            for part_id in `ls "$device-part"*`; do
+                local part=`realpath $part_id`
+                local part_no=`echo $part_id | sed -e 's/.*-part//g'`
+                if test "$part_no" = 1; then
+                    CB_SETUP_STORAGE1=$part
+                elif test "$part_no" = 2; then
+                    CB_SETUP_STORAGE2=$part
+                fi
+            done
+	    break
+        fi
+    done
+}
+
+wait_for_partitions_to_appear()
+{
+    for device in /dev/disk/by-id/*; do
+        if [ `realpath $device` = $CB_SETUP_STORAGE ]; then
+            if echo "$device" | grep -q -- "-part[0-9]*$"; then
+                echo "device $CB_SETUP_STORAGE must not be a partition part ($device)" 1>&2
+                exit 1
+            fi
+
+            if [ ! -e ${device}-part1 ]; then
+                echo -n "Waiting for partitions to appear ."
+
+                while [ ! -e ${device}-part1 ]
+                do
+                    sleep 1
+                    echo -n "."
+                done
+                echo " done"
+            fi
+        fi
+    done
+}
+
 arm_boot_image_blob()
 {
     # Make boot image blob
@@ -342,7 +389,11 @@ cmd_format_storage()
 
     # Create and format the root partition
     sudo sgdisk -n 2:0:0 -t 2:7f01 "$CB_SETUP_STORAGE"
-    sudo mkfs.ext4 -L ROOT-A "$CB_SETUP_STORAGE"2
+
+    wait_for_partitions_to_appear
+    find_partitions_by_id
+
+    sudo mkfs.ext4 -L ROOT-A "$CB_SETUP_STORAGE2"
 
     echo "Done."
 }
@@ -352,8 +403,10 @@ cmd_mount_rootfs()
     # Skip this command if is not a media device.
     if ! $storage_is_media_device; then return 0; fi
 
+    find_partitions_by_id
+
     echo "Mounting rootfs partition in $ROOTFS_DIR"
-    local part="$CB_SETUP_STORAGE"2
+    local part="$CB_SETUP_STORAGE2"
     mkdir -p "$ROOTFS_DIR"
     sudo umount "$ROOTFS_DIR" || true
     sudo mount "$part" "$ROOTFS_DIR"
@@ -474,8 +527,10 @@ cmd_build_vboot()
 cmd_deploy_vboot()
 {
     if $storage_is_media_device; then
+        find_partitions_by_id
+
         # Install it on the boot partition
-        local boot="$CB_SETUP_STORAGE"1
+        local boot="$CB_SETUP_STORAGE1"
         sudo dd if=kernel/kernel.vboot of="$boot" bs=4M
     else
         sudo cp -av kernel/kernel.itb "$ROOTFS_DIR/boot"
@@ -490,8 +545,10 @@ cmd_eject_storage()
     if ! $storage_is_media_device; then return 0; fi
 
     echo "Ejecting storage device..."
+    # TODO: Better mount/umount control (udisksctl ?)
     sync
-    sudo eject "$CB_SETUP_STORAGE"
+    sudo umount "$CB_SETUP_STORAGE2" || true
+    sudo eject "$CB_SETUP_STORAGE" || true
     echo "All done."
 }
 
