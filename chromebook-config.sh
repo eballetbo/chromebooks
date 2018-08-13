@@ -10,7 +10,6 @@ ARM64_TOOLCHAIN="gcc-linaro-7.2.1-2017.11-x86_64_aarch64-linux-gnu"
 ARM64_TOOLCHAIN_URL="http://releases.linaro.org/components/toolchain/binaries/7.2-2017.11/aarch64-linux-gnu/$ARM64_TOOLCHAIN.tar.xz"
 
 KERNEL_URL="git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git"
-ROOTFS_DIR="$PWD/ROOT-A"
 
 # Current Working Directory
 CWD=$PWD

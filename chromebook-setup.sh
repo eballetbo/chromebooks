@@ -179,8 +179,6 @@ if [ -b "$CB_SETUP_STORAGE" ]; then
     storage_is_media_device=true
 else
     storage_is_media_device=false
-    # Overwrite default ROOTFS_DIR
-    ROOTFS_DIR="$CB_SETUP_STORAGE"
 fi
 
 [ "$CB_SETUP_ARCH" = "arm" ] || [ "$CB_SETUP_ARCH" == "arm64" ] || {
@@ -405,11 +403,13 @@ cmd_mount_rootfs()
 
     find_partitions_by_id
 
-    echo "Mounting rootfs partition in $ROOTFS_DIR"
-    local part="$CB_SETUP_STORAGE2"
-    mkdir -p "$ROOTFS_DIR"
-    sudo umount "$ROOTFS_DIR" || true
-    sudo mount "$part" "$ROOTFS_DIR"
+    echo "Mounting rootfs partition..."
+
+    udisksctl mount -b "$CB_SETUP_STORAGE2" || true
+    ROOTFS_DIR=`findmnt -n -o TARGET --source $CB_SETUP_STORAGE2`
+
+    # Verify that the disk is mounted, otherwise exit
+    if [ -z "$ROOTFS_DIR" ]; then exit 1; fi
 
     echo "Done."
 }
@@ -545,10 +545,10 @@ cmd_eject_storage()
     if ! $storage_is_media_device; then return 0; fi
 
     echo "Ejecting storage device..."
-    # TODO: Better mount/umount control (udisksctl ?)
-    sync
-    sudo umount "$CB_SETUP_STORAGE2" || true
-    sudo eject "$CB_SETUP_STORAGE" || true
+
+    udisksctl unmount -b "$CB_SETUP_STORAGE2"
+    udisksctl power-off -b "$CB_SETUP_STORAGE" || true
+
     echo "All done."
 }
 
