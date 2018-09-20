@@ -459,14 +459,15 @@ cmd_get_kernel()
 
     local arg_url="${1-$KERNEL_URL}"
 
-    # Create initial git repository if not already present
+    # 1. Create initial git repository if not already present
+    # 2. Checkout the latest release tagged
     [ -d kernel ] || {
         git clone "$arg_url" kernel
+        cd kernel
+        local tag=$(git describe --abbrev=0 --exclude="*rc*")
+	git checkout ${tag} -b release-${tag}
+	cd - > /dev/null
     }
-
-    cd kernel
-
-    cd - > /dev/null
 
     echo "Done."
 }
