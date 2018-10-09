@@ -262,99 +262,25 @@ wait_for_partitions_to_appear()
     done
 }
 
-arm_boot_image_blob()
+create_fit_image()
 {
-    # Make boot image blob
-    local kernel_its="/dts-v1/;
-    / {
-    description = \"Chrome OS kernel image with one or more FDT blobs\";
-    #address-cells = <1>;
-    images {
-        kernel@1{
-            description = \"kernel (arm)\";
-            data = /incbin/(\"arch/arm/boot/zImage\");
-            type = \"kernel\";
-            arch = \"arm\";
-            os = \"linux\";
-            compression = \"none\";
-        };
-        fdt@1{
-            description = \"RK3288 Veyron Minnie\";
-            data = /incbin/(\"arch/arm/boot/dts/rk3288-veyron-minnie.dtb\");
-            type = \"flat_dt\";
-            arch = \"arm\";
-            compression = \"none\";
-            fdt-version = <1>;
-        };
-        fdt@2{
-            description = \"RK3288 Veyron Jerry\";
-            data = /incbin/(\"arch/arm/boot/dts/rk3288-veyron-jerry.dtb\");
-            type = \"flat_dt\";
-            arch = \"arm\";
-            compression = \"none\";
-            fdt-version = <1>;
-        };
-    };
-    configurations {
-        default = \"conf@1\";
-        conf@1{
-            kernel = \"kernel@1\";
-            fdt = \"fdt@1\";
-        };
-        conf@2{
-            kernel = \"kernel@1\";
-            fdt = \"fdt@2\";
-        };
-      };
-    };"
+    # Devicetree binaries
+    local dtbs=""
 
-    echo "$kernel_its" > kernel.its
-
-    mkimage -f kernel.its kernel.itb
-}
-
-arm64_boot_image_blob()
-{
     # Compress image
-    rm -f arch/arm64/boot/Image.lz4 || true
-    lz4 arch/arm64/boot/Image arch/arm64/boot/Image.lz4
+    rm -f arch/${CB_SETUP_ARCH}/boot/Image.lz4 || true
+    lz4 arch/${CB_SETUP_ARCH}/boot/Image arch/${CB_SETUP_ARCH}/boot/Image.lz4
 
-    # Make boot image blob
-    local kernel_its="/dts-v1/;
-    / {
-        description = \"Chrome OS kernel image with one or more FDT blobs\";
-        #address-cells = <1>;
+    if [ "$CB_SETUP_ARCH" == "arm" ]; then
+        dtbs="-b arch/arm/boot/dts/rk3288-veyron-minnie.dtb \
+              -b arch/arm/boot/dts/rk3288-veyron-jerry.dtb"
+    else
+        dtbs="-b arch/arm64/boot/dts/rockchip/rk3399-gru-kevin.dtb"
+    fi
 
-        images {
-                kernel@1{
-                        description = \"kernel (arm64)\";
-                        data = /incbin/(\"arch/arm64/boot/Image.lz4\");
-                        type = \"kernel_noload\";
-                        arch = \"arm64\";
-                        os = \"linux\";
-                        compression = \"lz4\";
-                };
-                fdt@1{
-                        description = \"rk3399-gru-kevin\";
-                        data = /incbin/(\"arch/arm64/boot/dts/rockchip/rk3399-gru-kevin.dtb\");
-                        type = \"flat_dt\";
-                        arch = \"arm64\";
-                        compression = \"none\";
-                        fdt-version = <1>;
-                };
-        };
-        configurations {
-                default = \"conf@1\";
-                conf@1{
-                        kernel = \"kernel@1\";
-                        fdt = \"fdt@1\";
-                };
-        };
-    };"
-
-    echo "$kernel_its" > kernel.its
-
-    mkimage -f kernel.its kernel.itb
+    mkimage -D "-I dts -O dtb -p 2048" -f auto -A arm64 -O linux -T kernel -C lz4 -a 0 \
+            -d arch/arm64/boot/Image.lz4 $dtbs \
+            kernel.itb
 }
 
 # -----------------------------------------------------------------------------
@@ -501,11 +427,11 @@ cmd_build_kernel()
     # Build kernel + modules + device tree blob
     if [ "$CB_SETUP_ARCH" == "arm" ]; then
         make zImage modules dtbs $(jopt)
-        arm_boot_image_blob
     else
         make
-        arm64_boot_image_blob
     fi
+
+    create_fit_image
 
     cd - > /dev/null
 
