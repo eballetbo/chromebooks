@@ -428,7 +428,7 @@ cmd_build_kernel()
     if [ "$CB_SETUP_ARCH" == "arm" ]; then
         make zImage modules dtbs $(jopt)
     else
-        make
+	    make $(jopt)
     fi
 
     create_fit_image
