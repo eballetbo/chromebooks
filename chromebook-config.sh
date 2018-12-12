@@ -22,12 +22,3 @@ declare -A chromebook_names=(
     ["XE513C24"]="Samsung Chromebook Plus"
 )
 
-# Function to retrieve keys/values from associative array using indirection.
-
-get_assoc_keys() {
-    eval "echo \${!$1[@]}"
-}
-
-get_assoc_vals() {
-    eval "echo \${$1[$2]}"
-}
