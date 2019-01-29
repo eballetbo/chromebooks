@@ -483,23 +483,37 @@ cmd_build_bootstub()
 
 cmd_build_vboot()
 {
+    local arch
+    local bootloader
+    local vmlinuz
+
     echo "Sign the kernels to boot with Chrome OS devices..."
 
-    local boot=kernel/kernel.vboot
-    # Install it on the boot partition
-    if [ "$CB_SETUP_ARCH" == "x86_64" ]; then
-        echo "root=PARTUUID=%U/PARTNROFF=1 rootwait rw" > boot_params
-        [ -f bootstub/bootstub.efi ] || cmd_build_bootstub
-        sudo vbutil_kernel --pack "$boot" \
-                           --keyblock /usr/share/vboot/devkeys/kernel.keyblock \
-                           --signprivate /usr/share/vboot/devkeys/kernel_data_key.vbprivk \
-                           --version 1 --config boot_params \
-                           --bootloader ./bootstub/bootstub.efi \
-                           --vmlinuz kernel/arch/x86/boot/bzImage
-    else
-        echo "init=/sbin/init root=PARTUUID=%U/PARTNROFF=1 rootwait rw noinitrd" > boot_params
-        sudo vbutil_kernel --pack "$boot" --keyblock /usr/share/vboot/devkeys/kernel.keyblock --version 1 --signprivate /usr/share/vboot/devkeys/kernel_data_key.vbprivk --bootloader boot_params --config boot_params --vmlinuz kernel/kernel.itb --arch arm
-    fi
+    case "$CB_SETUP_ARCH" in
+        arm|arm64)
+            arch="arm"
+            bootloader="boot_params"
+            vmlinuz="kernel/kernel.itb"
+            ;;
+        x86_64)
+            arch="x86"
+            bootloader="./bootstub/bootstub.efi"
+            vmlinuz="kernel/arch/x86/boot/bzImage"
+            ;;
+        *)
+            echo "Unsupported vboot architecture"
+	    exit 1
+            ;;
+    esac
+
+    echo "root=PARTUUID=%U/PARTNROFF=1 rootwait rw" > boot_params
+    sudo vbutil_kernel --pack kernel/kernel.vboot \
+                       --keyblock /usr/share/vboot/devkeys/kernel.keyblock \
+                       --signprivate /usr/share/vboot/devkeys/kernel_data_key.vbprivk \
+                       --version 1 --config boot_params \
+                       --bootloader $bootloader \
+                       --vmlinuz $vmlinuz \
+                       --arch $arch
 
     echo "Done."
 }
