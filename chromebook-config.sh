@@ -8,6 +8,8 @@ TOOLCHAIN_URL="https://developer.arm.com/-/media/Files/downloads/gnu-a/8.2-2018.
 ARM64_DEBIAN_ROOTFS_URL="https://people.collabora.com/~eballetbo/debian/images/debian-stretch-chromebook-arm64.tar.gz"
 ARM64_TOOLCHAIN="gcc-arm-8.2-2018.08-x86_64-aarch64-linux-gnu"
 ARM64_TOOLCHAIN_URL="https://developer.arm.com/-/media/Files/downloads/gnu-a/8.2-2018.08/$ARM64_TOOLCHAIN.tar.xz"
+# x86_64 rootfs
+X86_64_DEBIAN_ROOTFS_URL="https://people.collabora.com/~eballetbo/debian/images/debian-stretch-chromebook-amd64.tar.gz"
 
 KERNEL_URL="git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git"
 

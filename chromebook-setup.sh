@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # This file:
 #
-#  - ARM Chromebook developer tool to create a Debian bootable media device.
+#  - Chromebook developer tool to create a Debian bootable media device.
 #
 # Usage:
 #
@@ -23,7 +23,7 @@ print_usage_exit()
     local arg_ret="${1-1}"
 
     echo "
-ARM/ARM64 Chromebook developer tool.
+Chromebook developer tool.
 
 Environment variables:
 
@@ -53,7 +53,7 @@ Options:
       /srv/nfs/rootfs for a NFS mount point.
 "
 echo "  --architecture=ARCH
-    Chromebook architecture, needs to be one of the following: arm | arm64"
+    Chromebook architecture, needs to be one of the following: arm | arm64 | x86_64"
 
 echo "Supported devices:
 
@@ -108,6 +108,9 @@ echo "Available commands:
 
   deploy_kernel_modules
     Install the Linux kernel modules on the rootfs.
+
+  build_bootstub
+    Build the ChromeOS bootstub.efi.
 
   build_vboot
     Build vboot image.
@@ -181,12 +184,14 @@ else
     storage_is_media_device=false
 fi
 
-[ "$CB_SETUP_ARCH" = "arm" ] || [ "$CB_SETUP_ARCH" == "arm64" ] || {
+[ "$CB_SETUP_ARCH" = "arm" ] || [ "$CB_SETUP_ARCH" == "arm64" ] || [ "$CB_SETUP_ARCH" == "x86_64" ] || {
     echo "Incorrect architecture device passed to the --architecture option."
     print_usage_exit
 }
 
-if [ "$CB_SETUP_ARCH" == "arm64" ]; then
+if [ "$CB_SETUP_ARCH" == "x86_64" ]; then
+    DEBIAN_ROOTFS_URL="$X86_64_DEBIAN_ROOTFS_URL"
+elif [ "$CB_SETUP_ARCH" == "arm64" ]; then
     DEBIAN_ROOTFS_URL="$ARM64_DEBIAN_ROOTFS_URL"
     TOOLCHAIN="$ARM64_TOOLCHAIN"
     TOOLCHAIN_URL="$ARM64_TOOLCHAIN_URL"
@@ -264,23 +269,27 @@ wait_for_partitions_to_appear()
 
 create_fit_image()
 {
-    # Devicetree binaries
-    local dtbs=""
+    if [ "$CB_SETUP_ARCH" != "x86_64" ]; then
+         # Devicetree binaries
+         local dtbs=""
 
-    # Compress image
-    rm -f arch/${CB_SETUP_ARCH}/boot/Image.lz4 || true
-    lz4 arch/${CB_SETUP_ARCH}/boot/Image arch/${CB_SETUP_ARCH}/boot/Image.lz4
+         # Compress image
+         rm -f arch/${CB_SETUP_ARCH}/boot/Image.lz4 || true
+         lz4 arch/${CB_SETUP_ARCH}/boot/Image arch/${CB_SETUP_ARCH}/boot/Image.lz4
 
-    if [ "$CB_SETUP_ARCH" == "arm" ]; then
-        dtbs="-b arch/arm/boot/dts/rk3288-veyron-minnie.dtb \
-              -b arch/arm/boot/dts/rk3288-veyron-jerry.dtb"
+         if [ "$CB_SETUP_ARCH" == "arm" ]; then
+             dtbs="-b arch/arm/boot/dts/rk3288-veyron-minnie.dtb \
+                   -b arch/arm/boot/dts/rk3288-veyron-jerry.dtb"
+         else
+             dtbs="-b arch/arm64/boot/dts/rockchip/rk3399-gru-kevin.dtb"
+         fi
+
+         mkimage -D "-I dts -O dtb -p 2048" -f auto -A arm64 -O linux -T kernel -C lz4 -a 0 \
+                 -d arch/arm64/boot/Image.lz4 $dtbs \
+                 kernel.itb
     else
-        dtbs="-b arch/arm64/boot/dts/rockchip/rk3399-gru-kevin.dtb"
+	echo "TODO: create x86_64 FIT image, now using a raw image"
     fi
-
-    mkimage -D "-I dts -O dtb -p 2048" -f auto -A arm64 -O linux -T kernel -C lz4 -a 0 \
-            -d arch/arm64/boot/Image.lz4 $dtbs \
-            kernel.itb
 }
 
 # -----------------------------------------------------------------------------
@@ -368,6 +377,11 @@ cmd_setup_rootfs()
 
 cmd_get_toolchain()
 {
+    if [ "$CB_SETUP_ARCH" == "x86_64" ]; then
+        echo "Using default distro toolchain"
+        return 0
+    fi
+
     [ -d "$TOOLCHAIN" ] && {
         echo "Toolchain already downloaded: $TOOLCHAIN"
         return 0
@@ -408,9 +422,11 @@ cmd_config_kernel()
     if [ "$CB_SETUP_ARCH" == "arm" ]; then
         scripts/kconfig/merge_config.sh -m arch/arm/configs/multi_v7_defconfig $CWD/fragments/multi-v7/chromebooks.cfg
         make olddefconfig
-    else
+    elif [ "$CB_SETUP_ARCH" == "arm64" ]; then
         scripts/kconfig/merge_config.sh -m arch/arm64/configs/defconfig $CWD/fragments/arm64/chromebooks.cfg
         make olddefconfig
+    else
+        make defconfig
     fi
 
     cd - > /dev/null
@@ -445,21 +461,45 @@ cmd_deploy_kernel_modules()
     cd kernel
 
     # Install the kernel modules on the rootfs
-    sudo make modules_install ARCH=$CB_SETUP_ARCH INSTALL_MOD_PATH=$ROOTFS_DIR
+    sudo make modules_install INSTALL_MOD_PATH=$ROOTFS_DIR
 
     cd - > /dev/null
 
     echo "Done."
 }
 
+cmd_build_bootstub()
+{
+   echo "Build bootstub.efi..."
+
+   cd bootstub
+
+   make PREFIX=""
+
+   cd - > /dev/null
+
+   echo "Done."
+}
+
 cmd_build_vboot()
 {
     echo "Sign the kernels to boot with Chrome OS devices..."
 
-    # Install it on the boot partition
-    echo "init=/sbin/init root=PARTUUID=%U/PARTNROFF=1 rootwait rw noinitrd" > boot_params
     local boot=kernel/kernel.vboot
-    sudo vbutil_kernel --pack "$boot" --keyblock /usr/share/vboot/devkeys/kernel.keyblock --version 1 --signprivate /usr/share/vboot/devkeys/kernel_data_key.vbprivk --bootloader boot_params --config boot_params --vmlinuz kernel/kernel.itb --arch arm
+    # Install it on the boot partition
+    if [ "$CB_SETUP_ARCH" == "x86_64" ]; then
+        echo "root=PARTUUID=%U/PARTNROFF=1 rootwait rw" > boot_params
+        [ -f bootstub/bootstub.efi ] || cmd_build_bootstub
+        sudo vbutil_kernel --pack "$boot" \
+                           --keyblock /usr/share/vboot/devkeys/kernel.keyblock \
+                           --signprivate /usr/share/vboot/devkeys/kernel_data_key.vbprivk \
+                           --version 1 --config boot_params \
+                           --bootloader ./bootstub/bootstub.efi \
+                           --vmlinuz kernel/arch/x86/boot/bzImage
+    else
+        echo "init=/sbin/init root=PARTUUID=%U/PARTNROFF=1 rootwait rw noinitrd" > boot_params
+        sudo vbutil_kernel --pack "$boot" --keyblock /usr/share/vboot/devkeys/kernel.keyblock --version 1 --signprivate /usr/share/vboot/devkeys/kernel_data_key.vbprivk --bootloader boot_params --config boot_params --vmlinuz kernel/kernel.itb --arch arm
+    fi
 
     echo "Done."
 }
@@ -475,7 +515,11 @@ cmd_deploy_vboot()
         local boot="$CB_SETUP_STORAGE1"
         sudo dd if=kernel/kernel.vboot of="$boot" bs=4M
     else
-        sudo cp -av kernel/kernel.itb "$ROOTFS_DIR/boot"
+        if [ "$CB_SETUP_ARCH" != "x86_64" ]; then
+            sudo cp -av kernel/kernel.itb "$ROOTFS_DIR/boot"
+	else
+            echo "WARNING: Not implemented for x86_64."
+	fi
     fi
 
     echo "Done."

@@ -1,0 +1,16 @@
+This is the Chrome OS bootstub that handles the handoff from our custom BIOS
+to the kernel.
+
+The Makefile was adapted from sample code in the gnu-efi library (GPLv2 or
+later).
+
+The trampoline.S code was adapted from grub v1.97 (GPLv3 or later).
+
+The bootstub.c code was written from scratch, although code from both grub
+and elilo v3.7 (GPLv2 or later) was referred to for examples.
+
+Accordingly, the bootstub code as a whole is subject to the license terms of
+the GPLv3 (or later).
+
+The authors are grateful to the above mentioned projects for their
+contributions to the free software community.
