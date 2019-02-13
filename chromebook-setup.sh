@@ -190,14 +190,15 @@ fi
 }
 
 if [ "$CB_SETUP_ARCH" == "x86_64" ]; then
-    DEBIAN_ROOTFS_URL="$X86_64_DEBIAN_ROOTFS_URL"
+    DEBIAN_ROOTFS_URL="$ROOTFS_BASE_URL/debian-$DEBIAN_SUITE-chromebook-amd64.tar.gz"
 elif [ "$CB_SETUP_ARCH" == "arm64" ]; then
-    DEBIAN_ROOTFS_URL="$ARM64_DEBIAN_ROOTFS_URL"
+    DEBIAN_ROOTFS_URL="$ROOTFS_BASE_URL/debian-$DEBIAN_SUITE-chromebook-$CB_SETUP_ARCH.tar.gz"
     TOOLCHAIN="$ARM64_TOOLCHAIN"
     TOOLCHAIN_URL="$ARM64_TOOLCHAIN_URL"
     [ -z "$CROSS_COMPILE" ] && export CROSS_COMPILE=\
 $PWD/$TOOLCHAIN/bin/aarch64-linux-gnu-
 else
+    DEBIAN_ROOTFS_URL="$ROOTFS_BASE_URL/debian-$DEBIAN_SUITE-chromebook-$CB_SETUP_ARCH.tar.gz"
     [ -z "$CROSS_COMPILE" ] && export CROSS_COMPILE=\
 $PWD/$TOOLCHAIN/bin/arm-linux-gnueabihf-
 fi
