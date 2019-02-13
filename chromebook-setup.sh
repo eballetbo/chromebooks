@@ -315,7 +315,7 @@ cmd_format_storage()
     }
 
     # Unmount any partitions automatically mounted
-    sudo umount "$CB_SETUP_STORAGE"? > /dev/null 2>&1 || true
+    sudo umount "$CB_SETUP_STORAGE"* > /dev/null 2>&1 || true
 
     # Clear the partition table
     sudo sgdisk -Z "$CB_SETUP_STORAGE"
