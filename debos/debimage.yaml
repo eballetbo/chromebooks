@@ -1,15 +1,10 @@
 {{- $arch := or .arch "arm64" -}}
-{{- $suite := or .suite "stretch" -}}
+{{- $suite := or .suite "sid" -}}
 {{- $image := or .image (printf "debian-%s-chromebook-%s" $suite $arch) -}}
 
 architecture: {{ $arch }}
 
 actions:
-  # Download all needed firmware not available in a debian package
-  - action: download
-    url: https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/rockchip/dptx.bin
-    name: dptx.bin
-
   - action: debootstrap
     suite: {{ $suite }}
     components:
@@ -43,21 +38,12 @@ actions:
     packages:
       - crda
       - firmware-libertas
+      - firmware-misc-nonfree
 
   - action: apt
     description: Install the default graphic environment
     packages:
       - task-lxde-desktop
- 
-  # Add rockchip/dptx.bin firmware
-  - action: run
-    description: Add rockchip/dptx.bin firmware
-    chroot: true
-    command: mkdir -p /lib/firmware/rockchip
-
-  - action: overlay
-    origin: dptx.bin
-    destination: /lib/firmware/rockchip/dptx.bin
  
   - action: run
     chroot: true
