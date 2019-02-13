@@ -332,6 +332,9 @@ cmd_format_storage()
     # Create and format the root partition
     sudo sgdisk -n 2:0:0 -t 2:7f01 "$CB_SETUP_STORAGE"
 
+    # Tell the system to refresh what it knows about the disk partitions
+    sudo partprobe "$CB_SETUP_STORAGE"
+
     wait_for_partitions_to_appear
     find_partitions_by_id
 
