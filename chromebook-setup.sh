@@ -286,7 +286,7 @@ create_fit_image()
          fi
 
          mkimage -D "-I dts -O dtb -p 2048" -f auto -A arm64 -O linux -T kernel -C lz4 -a 0 \
-                 -d arch/arm64/boot/Image.lz4 $dtbs \
+                 -d arch/${CB_SETUP_ARCH}/boot/Image.lz4 $dtbs \
                  kernel.itb
     else
 	echo "TODO: create x86_64 FIT image, now using a raw image"
