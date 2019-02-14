@@ -47,6 +47,6 @@ $ ./chromebook-setup.sh do_everything --architecture=arm64 --storage=/dev/sdX
 ### How to create a Debian image for Chromebooks
 You can build the Chromebook image for a specific suite and architecture like this:
 ```sh
-$ debos -t suite:"stretch" -t arch:"arm64" debos/debimage.yaml
+$ debos -t arch:"arm64" debos/debimage.yaml
 ```
 The images can be built for different architectures (only armhf and arm64 are complete)
