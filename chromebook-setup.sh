@@ -285,7 +285,7 @@ create_fit_image()
              dtbs="-b arch/arm64/boot/dts/rockchip/rk3399-gru-kevin.dtb"
          fi
 
-         mkimage -D "-I dts -O dtb -p 2048" -f auto -A arm64 -O linux -T kernel -C lz4 -a 0 \
+         mkimage -D "-I dts -O dtb -p 2048" -f auto -A ${CB_SETUP_ARCH} -O linux -T kernel -C lz4 -a 0 \
                  -d arch/${CB_SETUP_ARCH}/boot/Image.lz4 $dtbs \
                  kernel.itb
     else
