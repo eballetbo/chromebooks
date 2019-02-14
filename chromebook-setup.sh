@@ -198,7 +198,7 @@ elif [ "$CB_SETUP_ARCH" == "arm64" ]; then
     [ -z "$CROSS_COMPILE" ] && export CROSS_COMPILE=\
 $PWD/$TOOLCHAIN/bin/aarch64-linux-gnu-
 else
-    DEBIAN_ROOTFS_URL="$ROOTFS_BASE_URL/debian-$DEBIAN_SUITE-chromebook-$CB_SETUP_ARCH.tar.gz"
+    DEBIAN_ROOTFS_URL="$ROOTFS_BASE_URL/debian-$DEBIAN_SUITE-chromebook-armhf.tar.gz"
     [ -z "$CROSS_COMPILE" ] && export CROSS_COMPILE=\
 $PWD/$TOOLCHAIN/bin/arm-linux-gnueabihf-
 fi
