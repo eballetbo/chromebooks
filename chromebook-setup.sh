@@ -430,7 +430,8 @@ cmd_config_kernel()
         scripts/kconfig/merge_config.sh -m arch/arm64/configs/defconfig $CWD/fragments/arm64/chromebooks.cfg
         make olddefconfig
     else
-        make defconfig
+        scripts/kconfig/merge_config.sh -m arch/x86/configs/x86_64_defconfig $CWD/fragments/x86_64/chromebooks.cfg
+        make olddefconfig
     fi
 
     cd - > /dev/null
