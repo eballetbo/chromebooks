@@ -279,7 +279,9 @@ create_fit_image()
          lz4 arch/${CB_SETUP_ARCH}/boot/Image arch/${CB_SETUP_ARCH}/boot/Image.lz4
 
          if [ "$CB_SETUP_ARCH" == "arm" ]; then
-             dtbs="-b arch/arm/boot/dts/rk3288-veyron-minnie.dtb \
+             dtbs=" \
+                   -b arch/arm/boot/dts/exynos5250-snow.dtb \
+                   -b arch/arm/boot/dts/rk3288-veyron-minnie.dtb \
                    -b arch/arm/boot/dts/rk3288-veyron-jerry.dtb"
          else
              dtbs="-b arch/arm64/boot/dts/rockchip/rk3399-gru-kevin.dtb"
