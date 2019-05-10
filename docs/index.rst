@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Chromebooks Developer Cookbook's documentation!
-==========================================================
+Chromebooks Developer Cookbook
+==============================
 
 .. toctree::
    :maxdepth: 2
