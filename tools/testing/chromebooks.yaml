@@ -1,6 +1,6 @@
 metadata:
-  name: bootrr
-  description: "Chromebooks testing"
+  name: chromebooks
+  description: "Chromebooks test plan"
   environment:
     - lava-test-shell
 
