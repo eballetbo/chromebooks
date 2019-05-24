@@ -49,4 +49,5 @@ You can build the Chromebook image for a specific suite and architecture like th
 ```sh
 $ debos -t arch:"arm64" debos/debimage.yaml
 ```
-The images can be built for different architectures (only armhf and arm64 are complete)
+The images can be built for different architectures (supported architectures are
+armhf, arm64 and amd64)
