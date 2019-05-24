@@ -10,6 +10,7 @@ Chromebooks Developer Cookbook
    :maxdepth: 2
    :caption: Contents:
 
+   source/README.md
 
 
 Indices and tables
