@@ -37,6 +37,8 @@ actions:
     description: Install packages needed by Chromebooks
     packages:
       - crda
+      - firmware-intel-sound
+      - firmware-iwlwifi
       - firmware-libertas
       - firmware-misc-nonfree
 
