@@ -1,0 +1,127 @@
+{{- $suite := or .suite "sid" -}}
+{{- $architecture := or .architecture "arm64" -}}
+{{- $ospack := or .ospack (printf "debian-scp-demo-%s-%s" $suite $architecture) -}}
+
+architecture: {{ $architecture }}
+
+actions:
+  - action: debootstrap
+    suite: {{ $suite }}
+    components:
+      - main
+      - contrib
+      - non-free
+    mirror: https://deb.debian.org/debian
+    variant: minbase
+
+  - action: apt
+    packages:
+      - apt-transport-https
+      - ca-certificates
+
+  - action: overlay
+    source: overlays/base
+
+  - action: run
+    chroot: true
+    command: apt-get update
+
+  - action: apt
+    packages:
+      - acl
+      - kmod
+      - libnss-myhostname
+      - locales
+      - openssh-server
+      - sudo
+      - dbus-user-session
+      - systemd-sysv
+      - net-tools
+      - iproute2
+      - udev
+      - vim
+      - weston
+
+  - action: apt
+    description: Install packages needed by Samsung Chromebook Plus
+    packages:
+      - crda
+      - firmware-libertas
+      - firmware-misc-nonfree
+
+  - action: apt
+    description: Install packages needed to build latest version of mesa
+    packages:
+      - bison
+      - build-essential
+      - gettext
+      - git
+      - flex
+      - libexpat1-dev
+      - libdrm-dev
+      - libwayland-dev
+      - libwayland-egl-backend-dev
+      - libx11-dev
+      - libx11-xcb-dev
+      - libxext-dev
+      - libxdamage-dev
+      - libxcb-dri2-0-dev
+      - libxcb-dri3-dev
+      - libxcb-glx0-dev
+      - libxcb-present-dev
+      - libxshmfence-dev
+      - libxxf86vm-dev
+      - libxrandr-dev
+      - meson
+      - pkg-config
+      - python3-mako
+      - wayland-protocols
+      - zlib1g-dev
+
+  - action: apt
+    description: Install packages for test purposes
+    packages:
+      - kmscube
+      - neverball
+      - mesa-utils-extra
+      - v4l-utils
+
+  - action: apt
+    description: Install packages needed by Wiimote
+    packages:
+      - bluetooth
+      - wminput
+
+  - action: run
+    chroot: true
+    script: scripts/install-mesa.sh
+
+  - action: run
+    chroot: true
+    script: scripts/setup-user.sh
+
+  - action: run
+    description: Set hostname
+    chroot: true
+    command: echo debian > /etc/hostname
+
+  - action: overlay
+    description: Log automatically on the serial console
+    source: overlays/auto-login
+
+  - action: overlay
+    description: Add network configuration
+    source: overlays/networkd
+
+  - action: run
+    description: Setup networking
+    chroot: true
+    script: scripts/setup-networking.sh
+
+  - action: run
+    description: Setup wayland compositor
+    chroot: true
+    command: systemctl enable weston
+
+  - action: pack
+    file: {{ $ospack }}.tar.gz
