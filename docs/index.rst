@@ -11,6 +11,7 @@ Chromebooks Developer Cookbook
    :caption: Contents:
 
    source/README.md
+   source/scp-demo
 
 
 Indices and tables
