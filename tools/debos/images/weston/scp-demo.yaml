@@ -41,6 +41,7 @@ actions:
       - udev
       - vim
       - weston
+      - pulseaudio
 
   - action: apt
     description: Install packages needed by Samsung Chromebook Plus
@@ -85,6 +86,7 @@ actions:
       - neverball
       - mesa-utils-extra
       - v4l-utils
+      - pavucontrol
 
   - action: apt
     description: Install packages needed by Wiimote
