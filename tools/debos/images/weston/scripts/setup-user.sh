@@ -7,6 +7,7 @@ adduser --gecos "$USER" \
         --shell /bin/bash \
         "$USER"
 
+adduser "$USER" audio
 adduser "$USER" sudo
 adduser "$USER" video
 adduser "$USER" render
