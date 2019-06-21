@@ -1,8 +1,18 @@
-=======================================
-Samsung Chromebook Plus Demo (scp-demo)
-=======================================
+====================
+Weston Rockchip Demo
+====================
 
-The Samsung Chromebook Plus (kevin) is a convertible touchscreen laptop powered by an ARMv8 Rockchip RK3399 hexa-core processor and 4GB RAM, measuring 11.04" x 8.72" x 0.55" and weighing 2.38 lbs.
+The purpose of this demo is show current support in mainline for different Rockchip boards. The demo runs a `Debian` based image with Weston and accelerated graphics using Panfrost.
+
+The `Debian` images are assembled using the [debos](https://github.com/go-debos/debos) utility, which uses the `Debian` package feed beneath. Stuff not available in official `Debian` packages will be built from sources or downloaded into the final image.
+
+Supported and tested hardware
+=============================
+
+Samsung Chromebook Plus (kevin)
+-------------------------------
+
+The Samsung Chromebook Plus is a convertible touchscreen laptop powered by an ARMv8 Rockchip RK3399 hexa-core processor and 4GB RAM, measuring 11.04" x 8.72" x 0.55" and weighing 2.38 lbs.
 
 Features:
 
@@ -15,9 +25,21 @@ Features:
 * 2x USB 3.0 Type-C ports
 * Built-in stylus
 
-The purpose of this demo is show current support in mainline for Samsung Chromebook Plus. The demo runs a `Debian` based image with Weston and accelerated graphics using Panfrost.
+ASUS Chromebook Flip C100P (veyron_minnie)
+------------------------------------------
 
-The `Debian` images are assembled using the [debos](https://github.com/go-debos/debos) utility, which uses the `Debian` package feed beneath. Stuff not available in official `Debian` packages will be built from sources or downloaded into the final image.
+The ASUS Chromebook Flip C100P is a convertible touchscreen laptop powered by an ARMv7 Rockchip RK3288 processor and 4GB RAM, measuring 262.8 x 182.4 x 15.6 mm (WxDxH) and weighing 0.89 kg.
+
+Features:
+
+* Rockchip RK3288 1.8GHz
+* 2GB/4GB LPDDR3 RAM
+* 10,1" - 25,65 cm 16:10 WXGA (1280x800) LED display
+* Mali T764 GPU
+* 16GB/32GB eMMC
+* 2Cells 31 Whrs nattery
+* 2x USB 2.0 ports
+
 
 The Debian way to build the demo rootfs
 =======================================
@@ -36,16 +58,22 @@ First, make sure you have KVM installed:
 
   $ sudo apt install qemu-kvm ovmf
 
-
 Now that that’s done, let’s create the images, run:
 
 .. code-block:: sh
 
-  $ $GOPATH/bin/debos -m 4G tools/debos/images/weston/scp-demo.yaml
+  Export the architecture of your device:
+
+  $ export architecture=
+  or
+  $ export architecture=armhf
+
+  And then run:
+  $ $GOPATH/bin/debos -m 4G -t architecture:$architecture tools/debos/images/weston/rockchip-demo.yaml
 
 Will create the following output:
 
-- debian-scp-demo-sid-arm64.tar.gz, a tarball with the debian weston based filesystem.
+- debian-scp-demo-sid-$architecture.tar.gz, a tarball with the debian weston based filesystem.
 
 The Docker way to build the demo rootfs
 =======================================
