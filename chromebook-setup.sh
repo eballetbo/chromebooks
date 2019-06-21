@@ -595,10 +595,12 @@ cmd_deploy_kernel()
 }
 
 # These commands are required
+ensure_command bc bc
 ensure_command curl curl
 ensure_command findmnt util-linux
 ensure_command realpath realpath
 ensure_command sgdisk gdisk
+ensure_command lz4 lz4
 ensure_command mkfs.ext4 e2fsprogs
 ensure_command mkimage u-boot-tools
 ensure_command udisksctl udisks2
