@@ -1,6 +1,6 @@
 {{- $suite := or .suite "sid" -}}
 {{- $architecture := or .architecture "arm64" -}}
-{{- $ospack := or .ospack (printf "debian-scp-demo-%s-%s" $suite $architecture) -}}
+{{- $ospack := or .ospack (printf "debian-rockchip-demo-%s-%s" $suite $architecture) -}}
 
 architecture: {{ $architecture }}
 
@@ -44,9 +44,10 @@ actions:
       - pulseaudio
 
   - action: apt
-    description: Install packages needed by Samsung Chromebook Plus
+    description: Install packages needed by supported Chromebooks
     packages:
       - crda
+      - firmware-brcm80211
       - firmware-libertas
       - firmware-misc-nonfree
 
