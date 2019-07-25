@@ -11,7 +11,7 @@ Chromebooks Developer Cookbook
    :caption: Contents:
 
    source/README.md
-   source/rockchip-demo
+   source/rockchip-weston-desktop-demo
 
 
 Indices and tables

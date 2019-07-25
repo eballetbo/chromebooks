@@ -69,11 +69,11 @@ Now that that’s done, let’s create the images, run:
   $ export architecture=armhf
 
   And then run:
-  $ $GOPATH/bin/debos -m 4G -t architecture:$architecture tools/debos/images/weston/rockchip-demo.yaml
+  $ $GOPATH/bin/debos -m 4G -t architecture:$architecture tools/debos/images/weston-desktop/weston-desktop.yaml
 
 Will create the following output:
 
-- debian-scp-demo-sid-$architecture.tar.gz, a tarball with the debian weston based filesystem.
+- debian-weston-desktop-sid-$architecture.tar.gz, a tarball with the debian weston based filesystem.
 
 The Docker way to build the demo rootfs
 =======================================
@@ -90,7 +90,7 @@ To build the image run:
 
 .. code-block:: sh
 
-  $ docker run --rm --interactive --tty --device /dev/kvm --user $(id -u) --workdir /recipes --mount "type=bind,source=$(pwd),destination=/recipes" --security-opt label=disable godebos/debos tools/debos/images/weston/scp-demo.yaml
+  $ docker run --rm --interactive --tty --device /dev/kvm --user $(id -u) --workdir /recipes --mount "type=bind,source=$(pwd),destination=/recipes" --security-opt label=disable godebos/debos tools/debos/images/weston-desktop/weston-desktop.yaml
 
 Quick steps to create a SD-card
 ===============================
