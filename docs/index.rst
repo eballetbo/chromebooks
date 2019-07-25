@@ -11,6 +11,7 @@ Chromebooks Developer Cookbook
    :caption: Contents:
 
    source/README.md
+   source/rockchip-gnome-desktop-demo
    source/rockchip-weston-desktop-demo
 
 
