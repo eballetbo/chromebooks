@@ -1,0 +1,61 @@
+{{- $suite := or .suite "sid" -}}
+{{- $architecture := or .architecture "arm64" -}}
+{{- $ospack := or .ospack (printf "debian-gnome-desktop-%s-%s" $suite $architecture) -}}
+{{- $image := or .image (printf "debian-gnome-desktop-%s-%s" $suite $architecture) -}}
+
+architecture: {{ $architecture }}
+
+actions:
+  - action: unpack
+    file: {{ $ospack }}.tar.gz
+
+  - action: run
+    description: Install kernel and modules
+    chroot: false
+    script: scripts/install-kernel.sh
+
+  - action: image-partition
+    imagename: {{ $image }}.img
+    imagesize: 16G
+    partitiontype: gpt
+    mountpoints:
+      - mountpoint: /
+        partition: ROOT-A
+    partitions:
+      - name: KERN-A
+        fs: none
+        start: 0%
+        end: 32MB
+      - name: ROOT-A
+        fs: ext4
+        start: 32MB
+        end: 100%
+
+  - action: run
+    description: Make the partition bootable
+    chroot: false
+    command: cgpt add -i 1 -t kernel -S 1 -T 5 -P 10 /dev/vda
+
+  - action: filesystem-deploy
+
+  # Note that the kernel.vboot file is created by install-kernel.sh script
+  - action: run
+    description: Flash kernel FIT image to the first partition
+    chroot: false
+    command: dd if=kernel.vboot of=/dev/vda1 bs=4M
+
+  - action: run
+    description: Create bmap file
+    postprocess: true
+    command: bmaptool create {{ $image }}.img > {{ $image }}.img.bmap
+
+  - action: run
+    description: Compress {{ $image }}.img
+    postprocess: true
+    command: gzip -f {{ $image }}.img
+
+  - action: run
+    description: Checksum for {{ $image }}.img.gz
+    postprocess: true
+    command: md5sum {{ $image }}.img.gz > {{ $image }}.img.gz.md5
+

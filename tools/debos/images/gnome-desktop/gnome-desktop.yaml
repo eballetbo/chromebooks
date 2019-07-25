@@ -1,0 +1,81 @@
+{{- $architecture := or .architecture "arm64" -}}
+{{- $suite := or .suite "sid" -}}
+{{- $ospack := or .ospack (printf "debian-gnome-desktop-%s-%s" $suite $architecture) -}}
+
+architecture: {{ $architecture }}
+
+actions:
+  - action: debootstrap
+    suite: {{ $suite }}
+    components:
+      - main
+      - contrib
+      - non-free
+    mirror: https://deb.debian.org/debian
+    variant: minbase
+
+  - action: apt
+    recommends: false
+    packages:
+      - adduser
+      - dbus
+      - iproute2
+      - kmod
+      - openssh-server
+      - sudo
+      - systemd-sysv
+      - udev
+      - usbutils
+      - vim
+
+  - action: apt
+    description: Install packages needed by Chromebooks
+    packages:
+      - crda
+      - firmware-brcm80211
+      - firmware-intel-sound
+      - firmware-iwlwifi
+      - firmware-libertas
+      - firmware-misc-nonfree
+
+  - action: apt
+    description: Install the default graphic environment
+    packages:
+      - task-gnome-desktop
+      - chromium
+
+  - action: overlay
+    description: Copying new mesa packages
+    source: overlays/mesa
+
+  - action: run
+    description: Upgrade mesa to a newer version
+    chroot: true
+    script: scripts/install-mesa.sh
+
+  - action: run
+    description: Set user permissions
+    chroot: true
+    script: scripts/setup-user.sh
+
+  - action: run
+    description: Set hostname
+    chroot: true
+    command: echo debian > /etc/hostname
+
+  - action: overlay
+    description: Log automatically on the serial console
+    source: overlays/auto-login
+
+  - action: overlay
+    description: Add network configuration
+    source: overlays/networkd
+
+  - action: run
+    description: Setup networking
+    chroot: true
+    script: scripts/setup-networking.sh
+
+  - action: pack
+    file: {{ $ospack }}.tar.gz
+    compression: gz
