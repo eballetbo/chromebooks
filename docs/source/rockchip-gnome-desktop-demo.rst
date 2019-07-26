@@ -62,3 +62,11 @@ The Docker way to build the demo rootfs
 
 .. include:: install-debos-on-docker.rst
 
+
+Extend the rootfs partition to fill available space
+---------------------------------------------------
+
+.. include:: extend-partition-to-fill-available-space.rst
+
+
+
