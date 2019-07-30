@@ -54,6 +54,8 @@ To flash it, assuming your SD card is /dev/mmcblk0, use:
 
 The bmap file is automatically looked for in the current directory.
 
+Note that the credentials to login are debian:debian.
+
 Appendix
 ========
 
