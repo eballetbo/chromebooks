@@ -51,7 +51,7 @@ actions:
   - action: run
     description: Upgrade mesa to a newer version
     chroot: true
-    script: scripts/install-mesa.sh
+    script: scripts/install-mesa.sh {{ $architecture }}
 
   - action: run
     description: Set user permissions

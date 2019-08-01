@@ -12,7 +12,7 @@ actions:
   - action: run
     description: Install kernel and modules
     chroot: false
-    script: scripts/install-kernel.sh
+    script: scripts/install-kernel.sh {{ $architecture }}
 
   - action: image-partition
     imagename: {{ $image }}.img

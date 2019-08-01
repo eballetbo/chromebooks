@@ -1,6 +1,13 @@
 #!/bin/sh
 
 set -e
+set -x
+
+storage_kernelci_org="https://storage.kernelci.org/mainline/master/v5.3-rc1"
+architecture=""
+compression=""
+kernel=""
+dtbs=""
 
 if [ -z "${ROOTDIR}" ]; then
   echo "ROOTDIR not given"
@@ -8,18 +15,44 @@ if [ -z "${ROOTDIR}" ]; then
 fi
 
 # Download kernel image from kernelCI storage
-wget https://storage.kernelci.org/mainline/master/v5.3-rc1/arm64/defconfig/gcc-8/Image
-wget https://storage.kernelci.org/mainline/master/v5.3-rc1/arm64/defconfig/gcc-8/dtbs/rockchip/rk3399-gru-kevin.dtb
-wget https://storage.kernelci.org/mainline/master/v5.3-rc1/arm64/defconfig/gcc-8/modules.tar.xz
+if [ "${1}" = "arm64" ]; then
 
+  architecture="arm64"
+
+  wget ${storage_kernelci_org}/arm64/defconfig/gcc-8/Image
+  wget ${storage_kernelci_org}/arm64/defconfig/gcc-8/dtbs/rockchip/rk3399-gru-kevin.dtb
+  wget ${storage_kernelci_org}/arm64/defconfig/gcc-8/modules.tar.xz
+
+  kernel="Image.lz4"
+  compression="lz4"
+  # Compress image
+  lz4 Image Image.lz4
+
+  dtbs="-b rk3399-gru-kevin.dtb"
+
+elif [ "${1}" = "armhf" ]; then
+
+  architecture="arm"
+
+  wget ${storage_kernelci_org}/arm/multi_v7_defconfig/gcc-8/zImage
+  wget ${storage_kernelci_org}/arm/multi_v7_defconfig/gcc-8/dtbs/rk3288-veyron-minnie.dtb
+  wget ${storage_kernelci_org}/arm/multi_v7_defconfig/gcc-8/modules.tar.xz
+
+  kernel="zImage"
+  compression="none"
+  dtbs="-b k3288-veyron-minnie.dtb"
+
+else
+  echo "${1} is a non-supported architecture, possible values are: armhf, arm64."
+  exit 1
+fi
+
+# Create FIT image
+mkimage -D "-I dts -O dtb -p 2048" -f auto -A ${architecture} -O linux -T kernel -C ${compression} -a 0 \
+        -d ${kernel} ${dtbs} kernel.itb
+
+# Install modules to the image
 tar xvf modules.tar.xz --strip 2 -C ${ROOTDIR}/lib
-
-# Compress the image
-lz4 Image Image.lz4
-
-# Create the FIT image
-mkimage -D "-I dts -O dtb -p 2048" -f auto -A arm64 -O linux -T kernel -C lz4 -a 0 \
-        -d Image.lz4 -b rk3399-gru-kevin.dtb kernel.itb
 
 # And sign the image (including the kernel boot parameters)
 echo "root=PARTUUID=%U/PARTNROFF=1 rootwait rw" > boot_params
