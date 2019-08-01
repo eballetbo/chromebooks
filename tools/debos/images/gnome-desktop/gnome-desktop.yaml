@@ -42,6 +42,7 @@ actions:
     description: Install the default graphic environment
     packages:
       - task-gnome-desktop
+      - network-manager-gnome
       - chromium
 
   - action: overlay
