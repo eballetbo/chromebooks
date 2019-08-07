@@ -433,6 +433,9 @@ cmd_get_kernel()
         git clone "$arg_url" kernel
         cd kernel
         local tag=$(git describe --abbrev=0 --exclude="*rc*")
+        if test ${KERNEL_TAG}; then
+            tag=${KERNEL_TAG}
+        fi
 	git checkout ${tag} -b release-${tag}
 	cd - > /dev/null
     }
