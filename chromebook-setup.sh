@@ -153,6 +153,7 @@ while true; do
             ;;
         --architecture)
             CB_SETUP_ARCH="$2"
+            [ "$CB_SETUP_ARCH" = "amd64" ] && CB_SETUP_ARCH="x86_64"
             shift 2
             ;;
         --)
