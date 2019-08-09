@@ -382,15 +382,22 @@ cmd_setup_rootfs()
     local debian_url="${1:-$DEBIAN_ROOTFS_URL}"
     local debian_archive=$(basename $debian_url)
 
-    # Download the Debian rootfs archive if it's not already there.
-    if [ ! -f "$debian_archive" ]; then
-        echo "Rootfs archive not found, downloading from $debian_url"
-        wget "$debian_url"
-    fi
+    echo "$debian_url"
+    if test -d "$debian_url"; then
+        # Copy the rootfs directory.
+        echo "Copying files into the partition"
+        sudo cp -a "$debian_url"/* "$ROOTFS_DIR"
+    else
+        # Download the Debian rootfs archive if it is not already there.
+        if [ ! -f "$debian_archive" ]; then
+            echo "Rootfs archive not found, downloading from $debian_url"
+            wget "$debian_url"
+        fi
 
-    # Untar the rootfs archive.
-    echo "Extracting files onto the partition"
-    sudo tar xf "$debian_archive" -C "$ROOTFS_DIR"
+        # Untar the rootfs archive.
+        echo "Extracting files onto the partition"
+        sudo tar xf "$debian_archive" -C "$ROOTFS_DIR"
+    fi
 
     echo "Done."
 }
