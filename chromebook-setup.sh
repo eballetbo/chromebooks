@@ -185,6 +185,12 @@ else
     storage_is_media_device=false
 fi
 
+[[ "$CB_SETUP_STORAGE" = /dev/* ]] && [[ $storage_is_media_device = false ]] && {
+    echo "Storage references a dev node, yet not a block device."
+    echo "Make sure you've plugged the device and referenced it correctly."
+    print_usage_exit
+}
+
 [ "$CB_SETUP_ARCH" = "arm" ] || [ "$CB_SETUP_ARCH" == "arm64" ] || [ "$CB_SETUP_ARCH" == "x86_64" ] || {
     echo "Incorrect architecture device passed to the --architecture option."
     print_usage_exit
