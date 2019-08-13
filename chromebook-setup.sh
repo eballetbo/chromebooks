@@ -222,6 +222,7 @@ jopt()
 
 ensure_command() {
     # ensure_command foo foo-package
+    which "$1" 2>/dev/null 1>/dev/null ||
     sudo which "$1" 2>/dev/null 1>/dev/null || (
         echo "Install required command $1 from package $2, e.g. sudo apt-get install $2"
         exit 1
