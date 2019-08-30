@@ -59,10 +59,9 @@ actions:
     chroot: true
     script: scripts/setup-user.sh
 
-  - action: run
-    description: Set hostname
-    chroot: true
-    command: echo debian > /etc/hostname
+  - action: overlay
+    description: Copy base files
+    source: overlays/base
 
   - action: overlay
     description: Log automatically on the serial console
