@@ -40,7 +40,7 @@ elif [ "${1}" = "armhf" ]; then
 
   kernel="zImage"
   compression="none"
-  dtbs="-b k3288-veyron-minnie.dtb"
+  dtbs="-b rk3288-veyron-minnie.dtb"
 
 else
   echo "${1} is a non-supported architecture, possible values are: armhf, arm64."
