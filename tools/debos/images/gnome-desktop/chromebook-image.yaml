@@ -16,7 +16,7 @@ actions:
 
   - action: image-partition
     imagename: {{ $image }}.img
-    imagesize: 16G
+    imagesize: 15G
     partitiontype: gpt
     mountpoints:
       - mountpoint: /
