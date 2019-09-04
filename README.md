@@ -1,3 +1,18 @@
+# About the Chromebooks Developer Cookbook
+
+This cookbook is a collection of useful scripts and information to create
+Debian-based images with the latest kernel that can be flashed on different
+Chromebook models.
+
+The documentation, like the chromebook developer tool itself, is very much
+a work in progress. Please note that improvements to the documentation are
+welcome; create a github account and fork the project if you want to help
+out.
+
+The Chromebooks Developer Cookbook can be found here:
+
+- https://chromebooks.readthedocs.io/en/latest/
+
 # Chromebook developer tool
 These instructions will create a dual-booting environment where you can
 switch between booting Debian and the stock ChromeOS. No changes are made
