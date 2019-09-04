@@ -43,6 +43,8 @@ For example, to create bootable SD card for the Samsung Chromebook Plus (arm64):
 $ ./chromebook-setup.sh do_everything --architecture=arm64 --storage=/dev/sdX
 ```
 
+The default username and password for the image is debian in lowercase.
+
 ## Appendix
 ### How to create a Debian image for Chromebooks
 You can build the Chromebook image for a specific suite and architecture like this:
