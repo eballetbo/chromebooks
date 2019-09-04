@@ -9,9 +9,9 @@ a work in progress. Please note that improvements to the documentation are
 welcome; create a github account and fork the project if you want to help
 out.
 
-The Chromebooks Developer Cookbook can be found here:
+The latest version of the 'Chromebooks Developer Cookbook' can be found here:
 
-- https://chromebooks.readthedocs.io/en/latest/
+- [https://chromebooks.readthedocs.io/en/latest/](https://chromebooks.readthedocs.io/en/latest/)
 
 # Chromebook developer tool
 These instructions will create a dual-booting environment where you can
