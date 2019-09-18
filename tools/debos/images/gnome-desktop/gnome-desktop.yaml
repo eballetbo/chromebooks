@@ -18,6 +18,7 @@ actions:
     recommends: false
     packages:
       - adduser
+      - curl
       - dbus
       - iproute2
       - kmod
@@ -45,10 +46,6 @@ actions:
       - network-manager-gnome
       - chromium
 
-  - action: overlay
-    description: Copying new mesa packages
-    source: overlays/mesa
-
   - action: run
     description: Upgrade mesa to a newer version
     chroot: true
@@ -62,14 +59,6 @@ actions:
   - action: overlay
     description: Copy base files
     source: overlays/base
-
-  - action: overlay
-    description: Log automatically on the serial console
-    source: overlays/auto-login
-
-  - action: overlay
-    description: Add network configuration
-    source: overlays/networkd
 
   - action: run
     description: Setup networking

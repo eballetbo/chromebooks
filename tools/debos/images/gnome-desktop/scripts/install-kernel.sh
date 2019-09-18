@@ -3,7 +3,7 @@
 set -e
 set -x
 
-storage_kernelci_org="https://storage.kernelci.org/mainline/master/v5.3-rc1"
+storage_kernelci_org="https://storage.kernelci.org/mainline/master/v5.3"
 architecture=""
 compression=""
 kernel=""
