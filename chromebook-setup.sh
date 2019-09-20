@@ -511,6 +511,7 @@ cmd_build_vboot()
             ;;
         x86_64)
             arch="x86"
+            [ -f ./bootstub/bootstub.efi ] || cmd_build_bootstub
             bootloader="./bootstub/bootstub.efi"
             vmlinuz="kernel/arch/x86/boot/bzImage"
             ;;
