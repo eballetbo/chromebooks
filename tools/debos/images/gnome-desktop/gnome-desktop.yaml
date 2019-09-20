@@ -46,10 +46,14 @@ actions:
       - network-manager-gnome
       - chromium
 
+{{- if eq $architecture "armhf" "arm64" }}
+
   - action: run
     description: Upgrade mesa to a newer version
     chroot: true
     script: scripts/install-mesa.sh {{ $architecture }}
+
+{{- end }}
 
   - action: run
     description: Set user permissions
