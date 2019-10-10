@@ -436,8 +436,8 @@ cmd_get_kernel()
         if test ${KERNEL_TAG}; then
             tag=${KERNEL_TAG}
         fi
-	git checkout ${tag} -b release-${tag}
-	cd - > /dev/null
+        git checkout ${tag} -b release-${tag}
+        cd - > /dev/null
     }
 
     echo "Done."
