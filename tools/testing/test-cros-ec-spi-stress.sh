@@ -67,5 +67,7 @@ do
 	fi
 done
 
+kill -9 $(pidof md5sum)
+
 test_report_exit pass
 
