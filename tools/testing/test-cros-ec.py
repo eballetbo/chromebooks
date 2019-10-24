@@ -200,7 +200,11 @@ class TestCrosEC(unittest.TestCase):
 
     # EC_FEATURE_BATTERY: Battery cutoff at-shutdown
     def test_cros_ec_battery_cutoff_at_shutdown(self):
-        self.skipTest("demonstrating skipping")
+        if not is_feature_supported(EC_FEATURE_BATTERY):
+            self.skipTest("EC_FEATURE_BATTERY not supported, skipping")
+
+        self.assertEqual(os.path.exists("/sys/class/chromeos/cros_ec/" + "battery_cutoff"), 1)
+
         fd = open("/sys/class/chromeos/cros_ec/" + "battery_cutoff", 'w')
         fd.write("at-shutdown")
         fd.close()
