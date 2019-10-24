@@ -5,6 +5,11 @@ metadata:
     - lava-test-shell
 
 run:
-  steps:
-    - export PATH="$PATH:$(pwd)/tools/testing"
-    - timeout 1m test-cros-ec-spi-stress.sh cros-ec-spi-stress || true
+    steps:
+      - export PATH="$PATH:$(pwd)/tools/testing"
+      - python test-cros-ec.py
+
+#run:
+#  steps:
+#    - export PATH="$PATH:$(pwd)/tools/testing"
+#    - timeout 1m test-cros-ec-spi-stress.sh cros-ec-spi-stress || true
