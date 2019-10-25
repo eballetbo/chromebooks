@@ -62,12 +62,16 @@ do
 	dmesg -c | grep "${ERRORS}"
 	if [ $? -eq 0 ]; then
 		# Kill md5sum processes
-		kill -9 $(pidof md5sum)
+		for pid in $(pidof md5sum); do
+			kill -9 ${pid}
+		done
 		test_report_exit fail
 	fi
 done
 
-kill -9 $(pidof md5sum)
+for pid in $(pidof md5sum); do
+	kill -9 ${pid}
+done
 
 test_report_exit pass
 
