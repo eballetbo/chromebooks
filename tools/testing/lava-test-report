@@ -1,6 +1,6 @@
 #!/bin/sh
 
-test_report_exit() {
+test_report() {
 	TEST_RESULT=${1}
 	command -v lava-test-case
 	if [ "$?" -eq 0 ]; then
@@ -8,6 +8,10 @@ test_report_exit() {
 	else
 		echo "<LAVA_SIGNAL_TESTCASE TEST_CASE_ID=${TEST_CASE_ID} RESULT=${TEST_RESULT}>"
 	fi
+}
+
+test_report_exit() {
+	test_report ${1}
 	exit 0
 }
 
