@@ -2,7 +2,7 @@ Kernel Status Matrix
 ====================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    asus-chromebook-flip-c100p.rst
    google-chromebook-pixel-2015.rst
