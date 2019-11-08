@@ -231,6 +231,28 @@ class TestCrosEC(unittest.TestCase):
             fd.close()
             self.assertEqual(cm.exception.error_code, 22)
 
+    def test_cros_ec_accel_iio_abi(self):
+        match = 0
+        for devname in os.listdir("/sys/bus/iio/devices"):
+            fd = open("/sys/bus/iio/devices/" + devname + "/name", 'r')
+            devtype = fd.read()
+            if devtype.startswith("cros-ec-accel"):
+                files = [ "buffer", "calibrate", "current_timestamp_clock",
+                          "frequency", "id", "in_accel_x_calibbias",
+                          "in_accel_x_calibscale", "in_accel_x_raw",
+                          "in_accel_y_calibbias", "in_accel_y_calibscale",
+                          "in_accel_y_raw", "in_accel_z_calibbias",
+                          "in_accel_z_calibscale", "in_accel_z_raw",
+                          "location", "sampling_frequency",
+                          "sampling_frequency_available", "scale",
+                          "scan_elements/", "trigger/"]
+                match += 1
+                for filename in files:
+                    self.assertEqual(os.path.exists("/sys/bus/iio/devices/" + devname + "/" + filename), 1)
+            fd.close()
+        if match == 0:
+            self.skipTest("No accelerometer found, skipping")
+
 if __name__ == '__main__':
     unittest.main(testRunner=LavaTestRunner(),
         # these make sure that some options that are not applicable
