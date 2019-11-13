@@ -275,6 +275,21 @@ class TestCrosEC(unittest.TestCase):
         if match == 0:
             self.skipTest("No gyroscope found, skipping")
 
+    def test_cros_ec_usbpd_charger_abi(self):
+        match = 0
+        for devname in os.listdir("/sys/class/power_supply/"):
+            if devname.startswith("CROS_USBPD_CHARGER"):
+                files = [ "current_max", "input_current_limit",
+                          "input_voltage_limit", "manufacturer", "model_name",
+			  "online", "power/autosuspend_delay_ms", "status",
+                          "type", "usb_type", "voltage_max_design",
+                          "voltage_now"]
+                match += 1
+                for filename in files:
+                    self.assertEqual(os.path.exists("/sys/class/power_supply/" + devname + "/" + filename), 1)
+        if match == 0:
+            self.skipTest("No charger found, skipping")
+
 if __name__ == '__main__':
     unittest.main(testRunner=LavaTestRunner(),
         # these make sure that some options that are not applicable
