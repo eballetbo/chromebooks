@@ -306,6 +306,21 @@ class TestCrosEC(unittest.TestCase):
         if match == 0:
             self.skipTest("No charger found, skipping")
 
+    def test_cros_ec_extcon_usbc_abi(self):
+        match = 0
+        for devname in os.listdir("/sys/class/extcon"):
+            fd = open("/sys/class/extcon/" + devname + "/name", 'r')
+            devtype = fd.read()
+            fd.close()
+            if ".spi:ec@0:extcon@" in devtype:
+                self.assertEqual(os.path.exists("/sys/class/extcon/" + devname + "/state"), 1)
+                for cable in os.listdir("/sys/class/extcon/" + devname):
+                    self.assertEqual(os.path.exists("/sys/class/extcon/" + devname + "/name"), 1)
+                    self.assertEqual(os.path.exists("/sys/class/extcon/" + devname + "/state"), 1)
+                    match += 1
+        if match == 0:
+            self.skipTest("No extcon device found, skipping")
+
 if __name__ == '__main__':
     unittest.main(testRunner=LavaTestRunner(),
         # these make sure that some options that are not applicable
