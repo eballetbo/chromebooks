@@ -290,6 +290,22 @@ class TestCrosEC(unittest.TestCase):
         if match == 0:
             self.skipTest("No charger found, skipping")
 
+    def test_cros_ec_battery_abi(self):
+        match = 0
+        for devname in os.listdir("/sys/class/power_supply/"):
+            if devname.startswith("BAT"):
+                files = [ "alarm", "capacity_level", "charge_full_design",
+                          "current_now", "manufacturer", "serial_number",
+                          "type", "voltage_min_design", "capacity",
+                          "charge_full", "charge_now", "cycle_count",
+                          "model_name", "present", "status", "technology",
+                          "voltage_now"]
+                match += 1
+                for filename in files:
+                    self.assertEqual(os.path.exists("/sys/class/power_supply/" + devname + "/" + filename), 1)
+        if match == 0:
+            self.skipTest("No charger found, skipping")
+
 if __name__ == '__main__':
     unittest.main(testRunner=LavaTestRunner(),
         # these make sure that some options that are not applicable
