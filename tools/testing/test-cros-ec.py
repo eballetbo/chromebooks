@@ -125,6 +125,12 @@ def is_feature_supported(feature):
 
     return (ECFEATURES & EC_FEATURE_MASK_0(feature)) > 0
 
+def read_file(name):
+    fd = open(name, 'r')
+    contents = fd.read()
+    fd.close()
+    return contents
+
 ###############################################################################
 # TEST RUNNERS
 ###############################################################################
@@ -235,8 +241,7 @@ class TestCrosEC(unittest.TestCase):
     def test_cros_ec_accel_iio_abi(self):
         match = 0
         for devname in os.listdir("/sys/bus/iio/devices"):
-            fd = open("/sys/bus/iio/devices/" + devname + "/name", 'r')
-            devtype = fd.read()
+            devtype = read_file("/sys/bus/iio/devices/" + devname + "/name")
             if devtype.startswith("cros-ec-accel"):
                 files = [ "buffer", "calibrate", "current_timestamp_clock",
                           "frequency", "id", "in_accel_x_calibbias",
@@ -250,7 +255,6 @@ class TestCrosEC(unittest.TestCase):
                 match += 1
                 for filename in files:
                     self.assertEqual(os.path.exists("/sys/bus/iio/devices/" + devname + "/" + filename), 1)
-            fd.close()
         if match == 0:
             self.skipTest("No accelerometer found, skipping")
 
@@ -265,14 +269,14 @@ class TestCrosEC(unittest.TestCase):
             fd = open("/sys/bus/iio/devices/" + devname + "/name", 'r')
             devtype = fd.read()
             if devtype.startswith("cros-ec-accel"):
-                location = read_sysfs_file(base_path + "location")
-                accel_scale = float(read_sysfs_file(base_path + "scale"))
+                location = read_file(base_path + "location")
+                accel_scale = float(read_file(base_path + "scale"))
                 exp = ACCEL_1G_IN_MS2
                 err = exp * ACCEL_MAG_VALID_OFFSET
                 mag = 0
                 for axis in ['x', 'y', 'z']:
                     axis_path = base_path + "in_accel_" + axis + "_raw"
-                    value = int(read_sysfs_file(axis_path))
+                    value = int(read_file(axis_path))
                     value *= accel_scale
                     mag += value * value
                 mag = math.sqrt(mag)
@@ -285,8 +289,7 @@ class TestCrosEC(unittest.TestCase):
     def test_cros_ec_gyro_iio_abi(self):
         match = 0
         for devname in os.listdir("/sys/bus/iio/devices"):
-            fd = open("/sys/bus/iio/devices/" + devname + "/name", 'r')
-            devtype = fd.read()
+            devtype = read_file("/sys/bus/iio/devices/" + devname + "/name")
             if devtype.startswith("cros-ec-gyro"):
                 files = [ "buffer/", "calibrate", "current_timestamp_clock",
                           "frequency", "id", "in_anglvel_x_calibbias",
@@ -300,7 +303,6 @@ class TestCrosEC(unittest.TestCase):
                 match += 1
                 for filename in files:
                     self.assertEqual(os.path.exists("/sys/bus/iio/devices/" + devname + "/" + filename), 1)
-            fd.close()
         if match == 0:
             self.skipTest("No gyroscope found, skipping")
 
@@ -338,9 +340,7 @@ class TestCrosEC(unittest.TestCase):
     def test_cros_ec_extcon_usbc_abi(self):
         match = 0
         for devname in os.listdir("/sys/class/extcon"):
-            fd = open("/sys/class/extcon/" + devname + "/name", 'r')
-            devtype = fd.read()
-            fd.close()
+            devtype = read_file("/sys/class/extcon/" + devname + "/name")
             if ".spi:ec@0:extcon@" in devtype:
                 self.assertEqual(os.path.exists("/sys/class/extcon/" + devname + "/state"), 1)
                 for cable in os.listdir("/sys/class/extcon/" + devname):
