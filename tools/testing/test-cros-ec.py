@@ -4,6 +4,7 @@
 from ctypes import *
 import errno
 import fcntl
+import math
 import os
 import sys
 import unittest
@@ -249,6 +250,34 @@ class TestCrosEC(unittest.TestCase):
                 match += 1
                 for filename in files:
                     self.assertEqual(os.path.exists("/sys/bus/iio/devices/" + devname + "/" + filename), 1)
+            fd.close()
+        if match == 0:
+            self.skipTest("No accelerometer found, skipping")
+
+    # This function validate accelerometer data by computing the magnitude.
+    # If the magnitude is not closed to 1G, that means data are invalid or
+    # the machine is in movement or there is a earth quake.
+    def test_cros_ec_accel_iio_data_is_valid(self):
+        ACCEL_1G_IN_MS2 = 9.8185
+        ACCEL_MAG_VALID_OFFSET = .25
+        match = 0
+        for devname in os.listdir("/sys/bus/iio/devices"):
+            fd = open("/sys/bus/iio/devices/" + devname + "/name", 'r')
+            devtype = fd.read()
+            if devtype.startswith("cros-ec-accel"):
+                location = read_sysfs_file(base_path + "location")
+                accel_scale = float(read_sysfs_file(base_path + "scale"))
+                exp = self.ACCEL_1G_IN_MS2
+                err = exp * self.ACCEL_MAG_VALID_OFFSET
+                mag = 0
+                for axis in ['x', 'y', 'z']:
+                    axis_path = base_path + "in_accel_" + axis + "_raw"
+                    value = int(read_sysfs_file(axis_path))
+                    value *= accel_scale
+                    mag += value * value
+                mag = math.sqrt(mag)
+                self.assertTrue(abs(mag - exp) <= err)
+                match += 1
             fd.close()
         if match == 0:
             self.skipTest("No accelerometer found, skipping")
