@@ -267,8 +267,8 @@ class TestCrosEC(unittest.TestCase):
             if devtype.startswith("cros-ec-accel"):
                 location = read_sysfs_file(base_path + "location")
                 accel_scale = float(read_sysfs_file(base_path + "scale"))
-                exp = self.ACCEL_1G_IN_MS2
-                err = exp * self.ACCEL_MAG_VALID_OFFSET
+                exp = ACCEL_1G_IN_MS2
+                err = exp * ACCEL_MAG_VALID_OFFSET
                 mag = 0
                 for axis in ['x', 'y', 'z']:
                     axis_path = base_path + "in_accel_" + axis + "_raw"
