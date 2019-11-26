@@ -266,7 +266,8 @@ class TestCrosEC(unittest.TestCase):
         ACCEL_MAG_VALID_OFFSET = .25
         match = 0
         for devname in os.listdir("/sys/bus/iio/devices"):
-            fd = open("/sys/bus/iio/devices/" + devname + "/name", 'r')
+            base_path = "/sys/bus/iio/devices/" + devname + "/"
+            fd = open(base_path + "name", 'r')
             devtype = fd.read()
             if devtype.startswith("cros-ec-accel"):
                 location = read_file(base_path + "location")
