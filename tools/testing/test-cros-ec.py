@@ -288,6 +288,8 @@ class TestCrosEC(unittest.TestCase):
                   "sampling_frequency_available", "scale",
                   "scan_elements/", "trigger/"]
         sysfs_check_attributes_exists( self, "/sys/bus/iio/devices", "cros-ec-accel", files, True)
+        if kernel_greater_than(5,4,0):
+            sysfs_check_attributes_exists( self, "/sys/bus/iio/devices", "cros-ec-accel", ["frequency"], True)
 
 
     # This function validate accelerometer data by computing the magnitude.
