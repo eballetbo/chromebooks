@@ -322,17 +322,17 @@ class TestCrosEC(unittest.TestCase):
             self.skipTest("No accelerometer found, skipping")
 
     def test_cros_ec_gyro_iio_abi(self):
-        files = [ "buffer/", "calibrate", "current_timestamp_clock",
-                  "frequency", "id", "in_anglvel_x_calibbias",
-                  "in_anglvel_x_calibscale", "in_anglvel_x_raw",
-                  "in_anglvel_y_calibbias", "in_anglvel_y_calibscale",
-                  "in_anglvel_y_raw", "in_anglvel_z_calibbias",
-                  "in_anglvel_z_calibscale", "in_anglvel_z_raw",
-                  "location", "sampling_frequency",
+        files = [ "buffer/", "calibrate", "current_timestamp_clock", "id",
+                  "in_anglvel_x_calibbias", "in_anglvel_x_calibscale",
+                  "in_anglvel_x_raw", "in_anglvel_y_calibbias",
+                  "in_anglvel_y_calibscale", "in_anglvel_y_raw",
+                  "in_anglvel_z_calibbias", "in_anglvel_z_calibscale",
+                  "in_anglvel_z_raw", "location", "sampling_frequency",
                   "sampling_frequency_available", "scale",
                   "scan_elements/", "trigger/"]
         sysfs_check_attributes_exists( self, "/sys/bus/iio/devices", "cros-ec-gyro", files, True)
-
+        if kernel_greater_than(5,4,0):
+            sysfs_check_attributes_exists( self, "/sys/bus/iio/devices", "cros-ec-gyro", ["frequency"], True)
 
     def test_cros_ec_usbpd_charger_abi(self):
         files = [ "current_max", "input_current_limit",
