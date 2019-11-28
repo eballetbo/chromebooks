@@ -153,6 +153,24 @@ def kernel_greater_than(version, major, minor):
         return True
     return False
 
+def sysfs_check_attributes_exists(s, path, name, files, check_devtype):
+    match = 0
+    for devname in os.listdir(path):
+        if check_devtype:
+            fd = open(path + "/" + devname + "/name", 'r')
+            devtype = fd.read()
+            fd.close()
+            if not devtype.startswith(name):
+                continue
+        else:
+            if not devname.startswith(name):
+                continue
+        match += 1
+        for filename in files:
+            s.assertEqual(os.path.exists(path + "/" + devname + "/" + filename), 1)
+    if match == 0:
+        s.skipTest("No " + name + " found, skipping")
+
 ###############################################################################
 # TEST RUNNERS
 ###############################################################################
@@ -261,24 +279,16 @@ class TestCrosEC(unittest.TestCase):
             self.assertEqual(cm.exception.error_code, 22)
 
     def test_cros_ec_accel_iio_abi(self):
-        match = 0
-        for devname in os.listdir("/sys/bus/iio/devices"):
-            devtype = read_file("/sys/bus/iio/devices/" + devname + "/name")
-            if devtype.startswith("cros-ec-accel"):
-                files = [ "buffer", "calibrate", "current_timestamp_clock",
-                          "frequency", "id", "in_accel_x_calibbias",
-                          "in_accel_x_calibscale", "in_accel_x_raw",
-                          "in_accel_y_calibbias", "in_accel_y_calibscale",
-                          "in_accel_y_raw", "in_accel_z_calibbias",
-                          "in_accel_z_calibscale", "in_accel_z_raw",
-                          "location", "sampling_frequency",
-                          "sampling_frequency_available", "scale",
-                          "scan_elements/", "trigger/"]
-                match += 1
-                for filename in files:
-                    self.assertEqual(os.path.exists("/sys/bus/iio/devices/" + devname + "/" + filename), 1)
-        if match == 0:
-            self.skipTest("No accelerometer found, skipping")
+        files = [ "buffer", "calibrate", "current_timestamp_clock", "id",
+                  "in_accel_x_calibbias", "in_accel_x_calibscale",
+                  "in_accel_x_raw", "in_accel_y_calibbias",
+                  "in_accel_y_calibscale", "in_accel_y_raw",
+                  "in_accel_z_calibbias", "in_accel_z_calibscale",
+                  "in_accel_z_raw", "location", "sampling_frequency",
+                  "sampling_frequency_available", "scale",
+                  "scan_elements/", "trigger/"]
+        sysfs_check_attributes_exists( self, "/sys/bus/iio/devices", "cros-ec-accel", files, True)
+
 
     # This function validate accelerometer data by computing the magnitude.
     # If the magnitude is not closed to 1G, that means data are invalid or
@@ -310,55 +320,34 @@ class TestCrosEC(unittest.TestCase):
             self.skipTest("No accelerometer found, skipping")
 
     def test_cros_ec_gyro_iio_abi(self):
-        match = 0
-        for devname in os.listdir("/sys/bus/iio/devices"):
-            devtype = read_file("/sys/bus/iio/devices/" + devname + "/name")
-            if devtype.startswith("cros-ec-gyro"):
-                files = [ "buffer/", "calibrate", "current_timestamp_clock",
-                          "frequency", "id", "in_anglvel_x_calibbias",
-                          "in_anglvel_x_calibscale", "in_anglvel_x_raw",
-                          "in_anglvel_y_calibbias", "in_anglvel_y_calibscale",
-                          "in_anglvel_y_raw", "in_anglvel_z_calibbias",
-                          "in_anglvel_z_calibscale", "in_anglvel_z_raw",
-                          "location", "sampling_frequency",
-                          "sampling_frequency_available", "scale",
-                          "scan_elements/", "trigger/"]
-                match += 1
-                for filename in files:
-                    self.assertEqual(os.path.exists("/sys/bus/iio/devices/" + devname + "/" + filename), 1)
-        if match == 0:
-            self.skipTest("No gyroscope found, skipping")
+        files = [ "buffer/", "calibrate", "current_timestamp_clock",
+                  "frequency", "id", "in_anglvel_x_calibbias",
+                  "in_anglvel_x_calibscale", "in_anglvel_x_raw",
+                  "in_anglvel_y_calibbias", "in_anglvel_y_calibscale",
+                  "in_anglvel_y_raw", "in_anglvel_z_calibbias",
+                  "in_anglvel_z_calibscale", "in_anglvel_z_raw",
+                  "location", "sampling_frequency",
+                  "sampling_frequency_available", "scale",
+                  "scan_elements/", "trigger/"]
+        sysfs_check_attributes_exists( self, "/sys/bus/iio/devices", "cros-ec-gyro", files, True)
+
 
     def test_cros_ec_usbpd_charger_abi(self):
-        match = 0
-        for devname in os.listdir("/sys/class/power_supply/"):
-            if devname.startswith("CROS_USBPD_CHARGER"):
-                files = [ "current_max", "input_current_limit",
-                          "input_voltage_limit", "manufacturer", "model_name",
-			  "online", "power/autosuspend_delay_ms", "status",
-                          "type", "usb_type", "voltage_max_design",
-                          "voltage_now"]
-                match += 1
-                for filename in files:
-                    self.assertEqual(os.path.exists("/sys/class/power_supply/" + devname + "/" + filename), 1)
-        if match == 0:
-            self.skipTest("No charger found, skipping")
+        files = [ "current_max", "input_current_limit",
+                  "input_voltage_limit", "manufacturer", "model_name",
+                  "online", "power/autosuspend_delay_ms", "status",
+                  "type", "usb_type", "voltage_max_design",
+                  "voltage_now"]
+        sysfs_check_attributes_exists( self, "/sys/class/power_supply/", "CROS_USBPD_CHARGER", files, False)
 
     def test_cros_ec_battery_abi(self):
-        match = 0
-        for devname in os.listdir("/sys/class/power_supply/"):
-            if devname.startswith("BAT"):
-                files = [ "alarm", "capacity_level", "charge_full_design",
-                          "current_now", "manufacturer", "serial_number",
-                          "type", "voltage_min_design", "capacity",
-                          "charge_full", "charge_now", "cycle_count",
-                          "model_name", "present", "status", "technology",
-                          "voltage_now"]
-                match += 1
-                for filename in files:
-                    self.assertEqual(os.path.exists("/sys/class/power_supply/" + devname + "/" + filename), 1)
-        if match == 0:
-            self.skipTest("No charger found, skipping")
+        files = [ "alarm", "capacity_level", "charge_full_design",
+                  "current_now", "manufacturer", "serial_number",
+                  "type", "voltage_min_design", "capacity",
+                  "charge_full", "charge_now", "cycle_count",
+                  "model_name", "present", "status", "technology",
+                  "voltage_now"]
+        sysfs_check_attributes_exists( self, "/sys/class/power_supply/", "BAT", files, False)
 
     def test_cros_ec_extcon_usbc_abi(self):
         match = 0
