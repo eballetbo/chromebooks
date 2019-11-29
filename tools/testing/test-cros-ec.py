@@ -171,6 +171,12 @@ def sysfs_check_attributes_exists(s, path, name, files, check_devtype):
     if match == 0:
         s.skipTest("No " + name + " found, skipping")
 
+def check_mcu_abi(s, name):
+        if not os.path.exists("/dev/cros_" + name):
+            s.skipTest("MCU " + name + " not supported, skipping")
+        files = ["flashinfo", "reboot", "version"]
+        sysfs_check_attributes_exists(s, "/sys/class/chromeos/", "cros_" + name, files, False)
+
 ###############################################################################
 # TEST RUNNERS
 ###############################################################################
@@ -387,6 +393,18 @@ class TestCrosEC(unittest.TestCase):
                 break
             line = fd.readline()
         fd.close()
+
+    def test_cros_ec_abi(self):
+        check_mcu_abi(self, "ec");
+
+    def test_cros_fp_abi(self):
+        check_mcu_abi(self, "fp");
+
+    def test_cros_tp_abi(self):
+        check_mcu_abi(self, "tp");
+
+    def test_cros_pd_abi(self):
+        check_mcu_abi(self, "pd");
 
 if __name__ == '__main__':
     unittest.main(testRunner=LavaTestRunner(),
