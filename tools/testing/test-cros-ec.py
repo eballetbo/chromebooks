@@ -245,39 +245,6 @@ class TestCrosEC(unittest.TestCase):
         # magic number that the EC answers on HELLO
         self.assertEqual(response.out_data, 0xa1b2c3d4)
 
-    # EC_FEATURE_BATTERY: Battery cutoff at-shutdown
-    def test_cros_ec_battery_cutoff_at_shutdown(self):
-        if not is_feature_supported(EC_FEATURE_BATTERY):
-            self.skipTest("EC_FEATURE_BATTERY not supported, skipping")
-
-        self.assertEqual(os.path.exists("/sys/class/chromeos/cros_ec/" + "battery_cutoff"), 1)
-
-        fd = open("/sys/class/chromeos/cros_ec/" + "battery_cutoff", 'w')
-        fd.write("at-shutdown")
-        fd.close()
-
-        fd = open("/sys/class/chromeos/cros_ec/" + "battery_cutoff", 'w')
-        fd.write("at-shutdown\n")
-        fd.close()
-
-        with self.assertRaises(IOError) as cm:
-            fd = open("/sys/class/chromeos/cros_ec/" + "battery_cutoff", 'w')
-            fd.write("at-shutdown-")
-            fd.close()
-            self.assertEqual(cm.exception.error_code, 22)
-
-        with self.assertRaises(IOError) as cm:
-            fd = open("/sys/class/chromeos/cros_ec/" + "battery_cutoff", 'w')
-            fd.write("at-shutdow-")
-            fd.close()
-            self.assertEqual(cm.exception.error_code, 22)
-
-        with self.assertRaises(IOError) as cm:
-            fd = open("/sys/class/chromeos/cros_ec/" + "battery_cutoff", 'w')
-            fd.write("at-shutdow")
-            fd.close()
-            self.assertEqual(cm.exception.error_code, 22)
-
     def test_cros_ec_accel_iio_abi(self):
         files = [ "buffer", "calibrate", "current_timestamp_clock", "id",
                   "in_accel_x_calibbias", "in_accel_x_calibscale",
