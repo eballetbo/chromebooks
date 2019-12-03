@@ -1,9 +1,8 @@
 #!/bin/sh
 
 set -e
-set -x
 
-storage_kernelci_org="https://storage.kernelci.org/mainline/master/v5.3"
+storage_kernelci_org="https://storage.kernelci.org/mainline/master/v5.4"
 architecture=""
 compression=""
 kernel=""
@@ -16,11 +15,15 @@ fi
 
 # Download kernel image from kernelCI storage
 if [ "${1}" = "arm64" ]; then
-
+  boards="rk3399-gru-kevin.dtb rk3399-gru-scarlet-inx.dtb"
   architecture="arm64"
 
   wget ${storage_kernelci_org}/arm64/defconfig/gcc-8/Image
-  wget ${storage_kernelci_org}/arm64/defconfig/gcc-8/dtbs/rockchip/rk3399-gru-kevin.dtb
+
+  for board in ${boards}; do
+    wget ${storage_kernelci_org}/arm64/defconfig/gcc-8/dtbs/rockchip/${board}
+  done
+
   wget ${storage_kernelci_org}/arm64/defconfig/gcc-8/modules.tar.xz
 
   kernel="Image.lz4"
@@ -28,19 +31,25 @@ if [ "${1}" = "arm64" ]; then
   # Compress image
   lz4 Image Image.lz4
 
-  dtbs="-b rk3399-gru-kevin.dtb"
+  dtbs="-b rk3399-gru-kevin.dtb \
+        -b rk3399-gru-scarlet-inx.dtb"
 
 elif [ "${1}" = "armhf" ]; then
-
+  boards="rk3288-veyron-minnie.dtb rk3288-veyron-jerry.dtb"
   architecture="arm"
 
   wget ${storage_kernelci_org}/arm/multi_v7_defconfig/gcc-8/zImage
-  wget ${storage_kernelci_org}/arm/multi_v7_defconfig/gcc-8/dtbs/rk3288-veyron-minnie.dtb
+
+  for board in ${boards}; do
+    wget ${storage_kernelci_org}/arm/multi_v7_defconfig/gcc-8/dtbs/${board}
+  done
+
   wget ${storage_kernelci_org}/arm/multi_v7_defconfig/gcc-8/modules.tar.xz
 
   kernel="zImage"
   compression="none"
-  dtbs="-b rk3288-veyron-minnie.dtb"
+  dtbs="-b rk3288-veyron-minnie.dtb \
+        -b rk3288-veyron-jerry.dtb"
 
 else
   echo "${1} is a non-supported architecture, possible values are: armhf, arm64."
