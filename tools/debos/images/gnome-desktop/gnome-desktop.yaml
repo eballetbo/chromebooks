@@ -44,15 +44,9 @@ actions:
     packages:
       - task-gnome-desktop
       - network-manager-gnome
+# The following packages are not available on all architectures
+{{- if ne $architecture "armhf" }}
       - chromium
-
-{{- if eq $architecture "armhf" "arm64" }}
-
-  - action: run
-    description: Upgrade mesa to a newer version
-    chroot: true
-    script: scripts/install-mesa.sh {{ $architecture }}
-
 {{- end }}
 
   - action: run
