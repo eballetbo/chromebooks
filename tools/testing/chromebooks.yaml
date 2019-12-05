@@ -8,5 +8,4 @@ run:
   steps:
     - export PATH="$PATH:$(pwd)/tools/testing"
     - timeout 1m test-cros-ec-spi-stress.sh cros-ec-spi-stress || true
-    - test-cros-ec-pwm-backlight.sh cros-ec-pwm-backlight
     - python3 tools/testing/test-cros-ec.py
