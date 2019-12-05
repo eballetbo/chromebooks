@@ -1,0 +1,21 @@
+# Profiles supported by this configuration.
+profiles:
+  - name: rk3399-gru-kevin
+    variables:
+        device_type: rk3399-gru-kevin
+        boot_method: depthcharge
+        arch: arm64
+        debarch: arm64
+        defconfig: defconfig
+        kernel_image: Image
+        dtbfile: rockchip/rk3399-gru-kevin
+  - name: rk3288-veyron-jaq
+    variables:
+        device_type: rk3288-veyron-jaq
+        boot_method: depthcharge
+        arch: arm
+        debarch: armhf
+        defconfig: multi_v7_defconfig
+        kernel_image: zImage
+        dtbfile: rk3288-veyron-jaq
+

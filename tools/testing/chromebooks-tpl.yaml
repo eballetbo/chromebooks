@@ -1,0 +1,59 @@
+device_type: {{device_type}}
+
+job_name: Chromebook Tests ({{device_type}})
+timeouts:
+  job:
+    minutes: 10
+  action:
+    minutes: 10
+  actions:
+    power-off:
+      seconds: 30
+priority: medium
+visibility: public
+
+actions:
+- deploy:
+    timeout:
+      minutes: 2
+    to: tftp
+    kernel:
+      url: http://storage.kernelci.org/mainline/master/v{{kernel_version}}/{{arch}}/{{defconfig}}/gcc-8/{{kernel_image}}
+    ramdisk:
+      url: https://staging-storage.kernelci.org/images/rootfs/debian/buster-cros-ec/20191204.1/{{debarch}}/rootfs.cpio.gz
+      compression: gz
+    modules:
+      url: http://storage.kernelci.org/mainline/master/v{{kernel_version}}/{{arch}}/{{defconfig}}/gcc-8/modules.tar.xz
+      compression: xz
+    dtb:
+      url: http://storage.kernelci.org/mainline/master/v{{kernel_version}}/{{arch}}/{{defconfig}}/gcc-8/dtbs/{{dtbfile}}.dtb
+    os: oe
+
+- boot:
+    timeout:
+      minutes: 5
+    method: {{boot_method}}
+    commands: ramdisk
+    prompts:
+      - '/ #'
+
+- test:
+    name: bootrr
+    definitions:
+      - repository: https://github.com/eballetbo/bootrr.git
+        revision: master
+        from: git
+        path: bootrr.yaml
+        name: bootrr
+
+- test:
+    name: chromebooks
+    timeout:
+      minutes: 5
+    definitions:
+      - repository: https://gitlab.collabora.com/eballetbo/chromebooks.git
+        revision: master
+        from: git
+        path: tools/testing/chromebooks.yaml
+        name: chromebooks
+
