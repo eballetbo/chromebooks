@@ -12,7 +12,7 @@ Chromebooks Developer Cookbook
 
    source/README.md
    source/status/kernel-status-matrix
-   source/rockchip-gnome-desktop-demo
+   source/gnome-desktop-rootfs-demo
    source/rockchip-weston-desktop-demo
 
 

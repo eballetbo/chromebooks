@@ -1,15 +1,10 @@
-===================
-Gnome Rockchip Demo
-===================
+==================
+GNOME3 Rootfs Demo
+==================
 
-The purpose of this demo is show current support in mainline for different Rockchip boards. The demo runs a `Debian` based image with Gnome and accelerated graphics using Panfrost.
+This is the rootfs used by default to build the images for the Chromebooks. The main purpose of this rootfs is show current support in mainline for different boards. The demo runs a `Debian` based image with GNOME3 and accelerated graphics when possible.
 
 The `Debian` images are assembled using the `debos <http://github.com/go-debos/debos>`_ utility, which uses the `Debian` package feed beneath. Stuff not available in official `Debian` packages will be built from sources or downloaded into the final image.
-
-Supported and tested hardware
-=============================
-
-.. include:: chromebooks/samsung-chromebook-plus.rst
 
 The Debian way to build the demo rootfs
 =======================================
@@ -20,7 +15,7 @@ Now that debos is installed, let’s create the demos images, run:
 
 .. code-block:: sh
 
-  Export the architecture of your device:
+  Export the architecture of your device (arm or arm64 or amd64):
 
   $ export architecture=arm64
 
@@ -30,11 +25,9 @@ Now that debos is installed, let’s create the demos images, run:
 
 Will create the following output:
 
-- debian-gnome-desktop-sid-$architecture.tar.gz, a tarball with the debian Gnome based filesystem.
+- debian-gnome-desktop-sid-$architecture.tar.gz, a tarball with the Debian GNOME3 based filesystem.
 
-**IMPORTANT**: Actually this step will fail unless you have the new mesa packages locally. I am still creating and testing new versions. If you're interested in get the latest version I built of the mesa packages I can send to you, just contact me.
-
-After that, run:
+After that, to create an image run (**note** this is only supported for arm and arm64 architectures):
 
 .. code-block:: sh
 
@@ -69,6 +62,4 @@ Extend the rootfs partition to fill available space
 ---------------------------------------------------
 
 .. include:: extend-partition-to-fill-available-space.rst
-
-
 
