@@ -57,3 +57,14 @@ actions:
         path: tools/testing/chromebooks.yaml
         name: chromebooks
 
+- test:
+    name: cros-ec
+    timeout:
+      minutes: 5
+    definitions:
+      - repository: https://gitlab.collabora.com/chromiumos/crostests.git
+        revision: master
+        from: git
+        path: cros-ec.yaml
+        name: cros-ec
+
