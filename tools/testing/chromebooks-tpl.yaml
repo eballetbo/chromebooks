@@ -18,15 +18,15 @@ actions:
       minutes: 2
     to: tftp
     kernel:
-      url: http://storage.kernelci.org/mainline/master/v{{kernel_version}}/{{arch}}/{{defconfig}}/gcc-8/{{kernel_image}}
+      url: http://storage.kernelci.org/{{kernel_tree}}/v{{kernel_version}}/{{arch}}/{{defconfig}}/gcc-8/{{kernel_image}}
     ramdisk:
       url: https://staging-storage.kernelci.org/images/rootfs/debian/buster-cros-ec/20191204.1/{{debarch}}/rootfs.cpio.gz
       compression: gz
     modules:
-      url: http://storage.kernelci.org/mainline/master/v{{kernel_version}}/{{arch}}/{{defconfig}}/gcc-8/modules.tar.xz
+      url: http://storage.kernelci.org/{{kernel_tree}}/v{{kernel_version}}/{{arch}}/{{defconfig}}/gcc-8/modules.tar.xz
       compression: xz
     dtb:
-      url: http://storage.kernelci.org/mainline/master/v{{kernel_version}}/{{arch}}/{{defconfig}}/gcc-8/dtbs/{{dtbfile}}.dtb
+      url: http://storage.kernelci.org/{{kernel_tree}}/v{{kernel_version}}/{{arch}}/{{defconfig}}/gcc-8/dtbs/{{dtbfile}}.dtb
     os: oe
 
 - boot:

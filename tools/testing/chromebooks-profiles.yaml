@@ -9,6 +9,7 @@ profiles:
         defconfig: defconfig
         kernel_image: Image
         dtbfile: rockchip/rk3399-gru-kevin
+        kernel_tree: mainline/master
   - name: rk3288-veyron-jaq
     variables:
         device_type: rk3288-veyron-jaq
@@ -18,4 +19,5 @@ profiles:
         defconfig: multi_v7_defconfig
         kernel_image: zImage
         dtbfile: rk3288-veyron-jaq
+        kernel_tree: mainline/master
 
