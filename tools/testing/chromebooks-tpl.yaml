@@ -20,7 +20,7 @@ actions:
     kernel:
       url: http://storage.kernelci.org/{{kernel_tree}}/v{{kernel_version}}/{{arch}}/{{defconfig}}/gcc-8/{{kernel_image}}
     ramdisk:
-      url: https://staging-storage.kernelci.org/images/rootfs/debian/buster-cros-ec/20191204.1/{{debarch}}/rootfs.cpio.gz
+      url: https://staging-storage.kernelci.org/images/rootfs/debian/buster-crostests/20191224.0/{{debarch}}/rootfs.cpio.gz
       compression: gz
     modules:
       url: http://storage.kernelci.org/{{kernel_tree}}/v{{kernel_version}}/{{arch}}/{{defconfig}}/gcc-8/modules.tar.xz
@@ -58,13 +58,13 @@ actions:
         name: chromebooks
 
 - test:
-    name: cros-ec
+    name: crostests
     timeout:
       minutes: 5
     definitions:
       - repository: https://gitlab.collabora.com/chromiumos/crostests.git
         revision: master
         from: git
-        path: cros-ec.yaml
-        name: cros-ec
+        path: crostests.yaml
+        name: crostests
 
