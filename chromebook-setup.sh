@@ -616,6 +616,15 @@ cmd_deploy_kernel()
     cmd_eject_storage
 }
 
+cmd_deploy_kernel_only()
+{
+    cmd_mount_rootfs
+    cmd_build_kernel
+    cmd_build_vboot
+    cmd_deploy_vboot
+    cmd_eject_storage
+}
+
 # These commands are required
 ensure_command bc bc
 ensure_command curl curl
