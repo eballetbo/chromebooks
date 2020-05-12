@@ -521,6 +521,7 @@ cmd_build_vboot()
     local arch
     local bootloader
     local vmlinuz
+    local extra_kparams
 
     echo "Sign the kernels to boot with Chrome OS devices..."
 
@@ -535,6 +536,7 @@ cmd_build_vboot()
             [ -f ./bootstub/bootstub.efi ] || cmd_build_bootstub
             bootloader="./bootstub/bootstub.efi"
             vmlinuz="kernel/arch/x86/boot/bzImage"
+            extra_kparams="tpm_tis.force=1 tpm_tis.interrupts=0"
             ;;
         *)
             echo "Unsupported vboot architecture"
@@ -542,7 +544,7 @@ cmd_build_vboot()
             ;;
     esac
 
-    echo "root=PARTUUID=%U/PARTNROFF=1 rootwait rw" > boot_params
+    echo "root=PARTUUID=%U/PARTNROFF=1 rootwait rw ${extra_kparams}" > boot_params
     sudo vbutil_kernel --pack kernel/kernel.vboot \
                        --keyblock /usr/share/vboot/devkeys/kernel.keyblock \
                        --signprivate /usr/share/vboot/devkeys/kernel_data_key.vbprivk \
