@@ -1,5 +1,15 @@
 # Profiles supported by this configuration.
 profiles:
+  - name: mt8173-elm-hana
+    variables:
+        device_type: mt8173-elm-hana
+        boot_method: depthcharge
+        arch: arm64
+        debarch: arm64
+        defconfig: defconfig
+        kernel_image: Image
+        dtbfile: mediatek/mt8173-elm-hana
+        kernel_tree: mainline/master
   - name: rk3399-gru-kevin
     variables:
         device_type: rk3399-gru-kevin
