@@ -302,6 +302,7 @@ create_fit_image()
              dtbs=" \
 		    -b arch/arm64/boot/dts/mediatek/mt8173-elm.dtb \
 		    -b arch/arm64/boot/dts/mediatek/mt8173-elm-hana.dtb \
+		    -b arch/arm64/boot/dts/mediatek/mt8183-kukui-krane-sku176.dtb \
 		    -b arch/arm64/boot/dts/rockchip/rk3399-gru-kevin.dtb\
                     -b arch/arm64/boot/dts/rockchip/rk3399-gru-scarlet-inx.dtb \
                   "
