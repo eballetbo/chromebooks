@@ -46,7 +46,7 @@ actions:
       - network-manager-gnome
 # The following packages are not available on all architectures
 {{- if ne $architecture "armhf" }}
-      - chromium
+      - chromium-sandbox
 {{- end }}
 
   - action: run
