@@ -300,6 +300,8 @@ create_fit_image()
              lz4 arch/${CB_SETUP_ARCH}/boot/Image arch/${CB_SETUP_ARCH}/boot/Image.lz4
 
              dtbs=" \
+		    -b arch/arm64/boot/dts/mediatek/mt8173-elm.dtb \
+		    -b arch/arm64/boot/dts/mediatek/mt8173-elm-hana.dtb \
 		    -b arch/arm64/boot/dts/rockchip/rk3399-gru-kevin.dtb\
                     -b arch/arm64/boot/dts/rockchip/rk3399-gru-scarlet-inx.dtb \
                   "
