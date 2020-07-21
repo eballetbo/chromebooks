@@ -1,5 +1,15 @@
 # Profiles supported by this configuration.
 profiles:
+  - name: hp-11A-G6-EE-grunt
+    variables:
+        device_type: hp-11A-G6-EE-grunt
+        boot_method: depthcharge
+        arch: x86_64
+        debarch: x86_64
+        defconfig: x86_64_defconfig+x86-chromebook
+        kernel_image: bzImage
+        dtbfile:
+        kernel_tree: mainline/master
   - name: mt8173-elm-hana
     variables:
         device_type: mt8173-elm-hana
