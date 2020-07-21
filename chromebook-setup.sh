@@ -459,7 +459,7 @@ cmd_config_kernel()
         scripts/kconfig/merge_config.sh -m arch/arm/configs/multi_v7_defconfig $CWD/fragments/multi-v7/chromebooks.cfg
         make olddefconfig
     elif [ "$CB_SETUP_ARCH" == "arm64" ]; then
-        scripts/kconfig/merge_config.sh -m arch/arm64/configs/defconfig $CWD/fragments/arm64/chromebooks.cfg
+        scripts/kconfig/merge_config.sh -m arch/arm64/configs/defconfig $CWD/fragments/arm64/chromebooks.cfg $CWD/fragments/arm64/mediatek.cfg
         make olddefconfig
     else
         scripts/kconfig/merge_config.sh -m arch/x86/configs/x86_64_defconfig $CWD/fragments/x86_64/chromebooks.cfg
