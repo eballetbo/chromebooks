@@ -1,11 +1,13 @@
 # chromebook-config.sh - Configuration file for chromebook-setup
 
+TOOLCHAIN_VERSION="9.2-2019.12"
+
 # default rootfs and toolchain (arm)
-TOOLCHAIN="gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf"
-TOOLCHAIN_URL="https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-a/8.3-2019.03/binrel/$TOOLCHAIN.tar.xz"
+TOOLCHAIN="gcc-arm-$TOOLCHAIN_VERSION-x86_64-arm-linux-gnueabihf"
+TOOLCHAIN_URL="https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-a/$TOOLCHAIN_VERSION/binrel/$TOOLCHAIN.tar.xz"
 # arm64 rootfs and toolchain
-ARM64_TOOLCHAIN="gcc-arm-8.3-2019.03-x86_64-aarch64-linux-gnu"
-ARM64_TOOLCHAIN_URL="https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-a/8.3-2019.03/binrel/$ARM64_TOOLCHAIN.tar.xz"
+ARM64_TOOLCHAIN="gcc-arm-$TOOLCHAIN_VERSION-x86_64-aarch64-none-linux-gnu"
+ARM64_TOOLCHAIN_URL="https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-a/$TOOLCHAIN_VERSION/binrel/$ARM64_TOOLCHAIN.tar.xz"
 
 # debian rootfs images
 DEBIAN_SUITE="sid"

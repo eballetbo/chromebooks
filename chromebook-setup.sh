@@ -203,11 +203,11 @@ elif [ "$CB_SETUP_ARCH" == "arm64" ]; then
     TOOLCHAIN="$ARM64_TOOLCHAIN"
     TOOLCHAIN_URL="$ARM64_TOOLCHAIN_URL"
     [ -z "$CROSS_COMPILE" ] && export CROSS_COMPILE=\
-$PWD/$TOOLCHAIN/bin/aarch64-linux-gnu-
+$PWD/$TOOLCHAIN/bin/aarch64-none-linux-gnu-
 else
     DEBIAN_ROOTFS_URL="$ROOTFS_BASE_URL/debian-gnome-desktop-$DEBIAN_SUITE-armhf.tar.gz"
     [ -z "$CROSS_COMPILE" ] && export CROSS_COMPILE=\
-$PWD/$TOOLCHAIN/bin/arm-linux-gnueabihf-
+$PWD/$TOOLCHAIN/bin/arm-none-linux-gnueabihf-
 fi
 
 export ARCH=$CB_SETUP_ARCH
