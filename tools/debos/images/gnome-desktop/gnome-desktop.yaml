@@ -37,6 +37,7 @@ actions:
       - firmware-brcm80211
       - firmware-intel-sound
       - firmware-iwlwifi
+      - firmware-realtek
       - firmware-libertas
       - firmware-misc-nonfree
 
