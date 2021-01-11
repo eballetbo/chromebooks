@@ -15,13 +15,13 @@ fi
 
 # Download kernel image from kernelCI storage
 if [ "${1}" = "arm64" ]; then
-  boards="rk3399-gru-kevin.dtb rk3399-gru-scarlet-inx.dtb"
+  boards="rockchip/rk3399-gru-kevin.dtb rockchip/rk3399-gru-scarlet-inx.dtb"
   architecture="arm64"
 
   wget ${storage_kernelci_org}/arm64/defconfig/gcc-8/Image
 
   for board in ${boards}; do
-    wget ${storage_kernelci_org}/arm64/defconfig/gcc-8/dtbs/rockchip/${board}
+    wget ${storage_kernelci_org}/arm64/defconfig/gcc-8/dtbs/${board}
   done
 
   wget ${storage_kernelci_org}/arm64/defconfig/gcc-8/modules.tar.xz
