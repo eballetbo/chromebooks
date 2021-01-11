@@ -480,9 +480,9 @@ cmd_build_kernel()
 
     # Build kernel + modules + device tree blob
     if [ "$CB_SETUP_ARCH" == "arm" ]; then
-        make zImage modules dtbs $(jopt)
+        make W=1 zImage modules dtbs $(jopt)
     else
-	    make $(jopt)
+	    make W=1 $(jopt)
     fi
 
     create_fit_image
