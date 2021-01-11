@@ -15,7 +15,8 @@ fi
 
 # Download kernel image from kernelCI storage
 if [ "${1}" = "arm64" ]; then
-  boards="rockchip/rk3399-gru-kevin.dtb rockchip/rk3399-gru-scarlet-inx.dtb"
+  boards="rockchip/rk3399-gru-kevin.dtb rockchip/rk3399-gru-scarlet-inx.dtb \
+	  mediatek/mt8173-elm-hana-rev7.dtb mediatek/mt8183-kukui-krane-sku176.dtb"
   architecture="arm64"
 
   wget ${storage_kernelci_org}/arm64/defconfig/gcc-8/Image
@@ -32,7 +33,9 @@ if [ "${1}" = "arm64" ]; then
   lz4 Image Image.lz4
 
   dtbs="-b rk3399-gru-kevin.dtb \
-        -b rk3399-gru-scarlet-inx.dtb"
+        -b rk3399-gru-scarlet-inx.dtb \
+	-b mt8173-elm-hana-rev7.dtb \
+	-b mt8183-kukui-krane-sku176.dtb"
 
 elif [ "${1}" = "armhf" ]; then
   boards="rk3288-veyron-minnie.dtb rk3288-veyron-jerry.dtb"
