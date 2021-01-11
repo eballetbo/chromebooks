@@ -2,7 +2,7 @@
 
 set -e
 
-storage_kernelci_org="https://storage.kernelci.org/mainline/master/v5.4"
+storage_kernelci_org="https://storage.kernelci.org/mainline/master/v5.10"
 architecture=""
 compression=""
 kernel=""
