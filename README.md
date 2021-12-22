@@ -22,11 +22,6 @@ that just want to take a test drive, or don't want to give up ChromeOS.
 
 You must be running the latest ChromeOS prior to installation.
 
-The following Chromebook have been tested with this tool.
-- ASUS Chromebook Flip C100PA (C100PA - arm)
-- CTL J2 Chromebook for Education (NBCJ2 - arm)
-- Samsung Chromebook Plus (XE513C24 -arm64)
-
 ## Switch to developer mode
 1. Turn off the laptop.
 2. To invoke Recovery mode, you hold down the ESC and Refresh keys and
