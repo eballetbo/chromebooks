@@ -345,7 +345,7 @@ cmd_format_storage()
     sudo sgdisk -Z "$CB_SETUP_STORAGE"
 
     # Create the boot partition and set it as bootable
-    sudo sgdisk -n 1:0:+32M -t 1:7f00 "$CB_SETUP_STORAGE"
+    sudo sgdisk -n 1:0:+64M -t 1:7f00 "$CB_SETUP_STORAGE"
 
     # Set special metadata understood by the Chromebook.  These flags
     # are not standard thus do not have names.  For more details, see
