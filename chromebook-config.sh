@@ -1,6 +1,6 @@
 # chromebook-config.sh - Configuration file for chromebook-setup
 
-TOOLCHAIN_VERSION="9.2-2019.12"
+TOOLCHAIN_VERSION="10.3-2021.07"
 
 # default rootfs and toolchain (arm)
 TOOLCHAIN="gcc-arm-$TOOLCHAIN_VERSION-x86_64-arm-linux-gnueabihf"
