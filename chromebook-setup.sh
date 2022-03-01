@@ -55,6 +55,10 @@ Options:
   and --architecture are compulsory but the latter is also optional
   if the ARCH environment variable has already been set.
 
+  --kernel=PATH
+    Path to the Linux Git repository used to build the kernel image.
+    If is not set, the default is to clone the kernel in $PWD/kernel.
+
   --storage=PATH
     Path to the Chromebook storage device or directory i.e.
       /dev/sdb for the SD card.
@@ -150,13 +154,17 @@ or to do the same to use NFS for the root filesystem:
     exit $arg_ret
 }
 
-opts=$(getopt -o "h,s:" -l "help,storage:,architecture:" -- "$@")
+opts=$(getopt -o "h,s:" -l "help,kernel:,storage:,architecture:" -- "$@")
 eval set -- "$opts"
 
 while true; do
     case "$1" in
         --help|-h)
             print_usage_exit
+            ;;
+        --kernel)
+            CB_KERNEL_PATH="$2"
+            shift 2
             ;;
         --storage)
             CB_SETUP_STORAGE="$2"
@@ -184,6 +192,10 @@ shift
 
 # -----------------------------------------------------------------------------
 # Options sanitising
+
+if [ -z "$CB_KERNEL_PATH" ]; then
+    CB_KERNEL_PATH="kernel"
+fi
 
 [ -n "$CB_SETUP_STORAGE" ] || {
     echo "Incorrect path/storage device passed to the --storage option."
@@ -453,9 +465,9 @@ cmd_get_kernel()
 
     # 1. Create initial git repository if not already present
     # 2. Checkout the latest release tagged
-    [ -d kernel ] || {
-        git clone "$arg_url" kernel
-        cd kernel
+    [ -d ${CB_KERNEL_PATH} ] || {
+        git clone "$arg_url" ${CB_KERNEL_PATH}
+        cd ${CB_KERNEL_PATH}
         local tag=$(git describe --abbrev=0 --exclude="*rc*")
         if test ${KERNEL_TAG}; then
             tag=${KERNEL_TAG}
@@ -471,7 +483,7 @@ cmd_config_kernel()
 {
     echo "Configure the kernel..."
 
-    cd kernel
+    cd $CB_KERNEL_PATH
 
     # Create .config
     if [ "$ARCH" == "arm" ]; then
@@ -494,7 +506,7 @@ cmd_build_kernel()
 {
     echo "Build kernel, modules and the device tree blob..."
 
-    cd kernel
+    cd ${CB_KERNEL_PATH}
 
     # Build kernel + modules + device tree blob
     if [ "$ARCH" == "arm" ]; then
@@ -514,7 +526,7 @@ cmd_deploy_kernel_modules()
 {
     echo "Deploy the kernel modules on the rootfs..."
 
-    cd kernel
+    cd ${CB_KERNEL_PATH}
 
     # Install the kernel modules on the rootfs
     sudo make modules_install INSTALL_MOD_PATH=$ROOTFS_DIR
@@ -550,13 +562,13 @@ cmd_build_vboot()
         arm|arm64)
             arch="arm"
             bootloader="boot_params"
-            vmlinuz="kernel/kernel.itb"
+            vmlinuz="$CB_KERNEL_PATH/kernel.itb"
             ;;
         x86_64)
             arch="x86"
             [ -f ./bootstub/bootstub.efi ] || cmd_build_bootstub
             bootloader="./bootstub/bootstub.efi"
-            vmlinuz="kernel/arch/x86/boot/bzImage"
+            vmlinuz="$CB_KERNEL_PATH/arch/x86/boot/bzImage"
             extra_kparams="tpm_tis.force=1 tpm_tis.interrupts=0"
             ;;
         *)
@@ -566,7 +578,7 @@ cmd_build_vboot()
     esac
 
     echo "root=PARTUUID=%U/PARTNROFF=1 rootwait rw ${extra_kparams}" > boot_params
-    sudo vbutil_kernel --pack kernel/kernel.vboot \
+    sudo vbutil_kernel --pack $CB_KERNEL_PATH/kernel.vboot \
                        --keyblock /usr/share/vboot/devkeys/kernel.keyblock \
                        --signprivate /usr/share/vboot/devkeys/kernel_data_key.vbprivk \
                        --version 1 --config boot_params \
@@ -586,10 +598,10 @@ cmd_deploy_vboot()
 
         # Install it on the boot partition
         local boot="$CB_SETUP_STORAGE1"
-        sudo dd if=kernel/kernel.vboot of="$boot" bs=4M
+        sudo dd if=$CB_KERNEL_PATH/kernel.vboot of="$boot" bs=4M
     else
         if [ "$ARCH" != "x86_64" ]; then
-            sudo cp -av kernel/kernel.itb "$ROOTFS_DIR/boot"
+            sudo cp -av $CB_KERNEL_PATH/kernel.itb "$ROOTFS_DIR/boot"
 	else
             echo "WARNING: Not implemented for x86_64."
 	fi
