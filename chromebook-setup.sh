@@ -150,11 +150,14 @@ or to do the same to use NFS for the root filesystem:
     exit $arg_ret
 }
 
-opts=$(getopt -o "s:" -l "storage:,architecture:" -- "$@")
+opts=$(getopt -o "h,s:" -l "help,storage:,architecture:" -- "$@")
 eval set -- "$opts"
 
 while true; do
     case "$1" in
+        --help|-h)
+            print_usage_exit
+            ;;
         --storage)
             CB_SETUP_STORAGE="$2"
             shift 2
