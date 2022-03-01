@@ -55,6 +55,11 @@ Options:
   and --architecture are compulsory but the latter is also optional
   if the ARCH environment variable has already been set.
 
+  --distro=NAME
+    Name of the Linux distribution that the kernel needs to support.
+    By setting a distro value, Kconfig symbols needed by a particular
+    distribution will be included when merging the config fragments.
+
   --kernel=PATH
     Path to the Linux Git repository used to build the kernel image.
     If is not set, the default is to clone the kernel in $PWD/kernel.
@@ -154,13 +159,17 @@ or to do the same to use NFS for the root filesystem:
     exit $arg_ret
 }
 
-opts=$(getopt -o "h,s:" -l "help,kernel:,storage:,architecture:" -- "$@")
+opts=$(getopt -o "h,s:" -l "help,distro:,kernel:,storage:,architecture:" -- "$@")
 eval set -- "$opts"
 
 while true; do
     case "$1" in
         --help|-h)
             print_usage_exit
+            ;;
+        --distro)
+            CB_DISTRO="$2"
+            shift 2
             ;;
         --kernel)
             CB_KERNEL_PATH="$2"
@@ -485,15 +494,23 @@ cmd_config_kernel()
 
     cd $CB_KERNEL_PATH
 
+    if [ -n $CB_DISTRO ]; then
+        if ! [ -f $CWD/fragments/distro/$CB_DISTRO.cfg ]; then
+            echo "Distro $CB_DISTRO is not supported yet"
+            print_usage_exit
+        fi
+        DISTRO_CFG="$CWD/fragments/distro/$CB_DISTRO.cfg"
+    fi
+
     # Create .config
     if [ "$ARCH" == "arm" ]; then
-        scripts/kconfig/merge_config.sh -m arch/arm/configs/multi_v7_defconfig $CWD/fragments/multi-v7/chromebooks.cfg
+        scripts/kconfig/merge_config.sh -m arch/arm/configs/multi_v7_defconfig $DISTRO_CFG $CWD/fragments/multi-v7/chromebooks.cfg
         make olddefconfig
     elif [ "$ARCH" == "arm64" ]; then
-        scripts/kconfig/merge_config.sh -m arch/arm64/configs/defconfig $CWD/fragments/arm64/chromebooks.cfg $CWD/fragments/arm64/mediatek.cfg $CWD/fragments/arm64/qualcomm.cfg
+        scripts/kconfig/merge_config.sh -m arch/arm64/configs/defconfig $DISTRO_CFG $CWD/fragments/arm64/chromebooks.cfg $CWD/fragments/arm64/mediatek.cfg $CWD/fragments/arm64/qualcomm.cfg
         make olddefconfig
     else
-        scripts/kconfig/merge_config.sh -m arch/x86/configs/x86_64_defconfig $CWD/fragments/x86_64/chromebooks.cfg
+        scripts/kconfig/merge_config.sh -m arch/x86/configs/x86_64_defconfig $DISTRO_CFG $CWD/fragments/x86_64/chromebooks.cfg
         make olddefconfig
     fi
 
