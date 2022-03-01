@@ -27,6 +27,13 @@ Chromebook developer tool.
 
 Environment variables:
 
+  ARCH
+
+    Standard variable to specify the architeture to be built by the
+    cross-compiler toolchain.  If it is not already defined before
+    calling this script, it will be set to the architecture specified
+    with the --architecture option.
+
   CROSS_COMPILE
 
     Standard variable to use a cross-compiler toolchain.  If it is not
@@ -45,7 +52,8 @@ Usage:
 Options:
 
   The following options are common to all commands.  Only --storage
-  and --architecture are compulsory.
+  and --architecture are compulsory but the latter is also optional
+  if the ARCH environment variable has already been set.
 
   --storage=PATH
     Path to the Chromebook storage device or directory i.e.
@@ -152,8 +160,8 @@ while true; do
             shift 2
             ;;
         --architecture)
-            CB_SETUP_ARCH="$2"
-            [ "$CB_SETUP_ARCH" = "amd64" ] && CB_SETUP_ARCH="x86_64"
+            ARCH="$2"
+            [ "$ARCH" = "amd64" ] && ARCH="x86_64"
             shift 2
             ;;
         --)
@@ -191,15 +199,20 @@ fi
     print_usage_exit
 }
 
-[ "$CB_SETUP_ARCH" = "arm" ] || [ "$CB_SETUP_ARCH" == "arm64" ] || [ "$CB_SETUP_ARCH" == "x86_64" ] || {
-    echo "Incorrect architecture device passed to the --architecture option."
+[ -z "$ARCH" ] && {
+    echo "Architecture was not set."
     print_usage_exit
 }
 
-if [ "$CB_SETUP_ARCH" == "x86_64" ]; then
+[ "$ARCH" = "arm" ] || [ "$ARCH" == "arm64" ] || [ "$ARCH" == "x86_64" ] || {
+    echo "Incorrect architecture $ARCH was set."
+    print_usage_exit
+}
+
+if [ "$ARCH" == "x86_64" ]; then
     DEBIAN_ROOTFS_URL="$ROOTFS_BASE_URL/debian-gnome-desktop-$DEBIAN_SUITE-amd64.tar.gz"
-elif [ "$CB_SETUP_ARCH" == "arm64" ]; then
-    DEBIAN_ROOTFS_URL="$ROOTFS_BASE_URL/debian-gnome-desktop-$DEBIAN_SUITE-$CB_SETUP_ARCH.tar.gz"
+elif [ "$ARCH" == "arm64" ]; then
+    DEBIAN_ROOTFS_URL="$ROOTFS_BASE_URL/debian-gnome-desktop-$DEBIAN_SUITE-$ARCH.tar.gz"
     TOOLCHAIN="$ARM64_TOOLCHAIN"
     TOOLCHAIN_URL="$ARM64_TOOLCHAIN_URL"
     [ -z "$CROSS_COMPILE" ] && export CROSS_COMPILE=\
@@ -210,7 +223,7 @@ else
 $PWD/$TOOLCHAIN/bin/arm-none-linux-gnueabihf-
 fi
 
-export ARCH=$CB_SETUP_ARCH
+export ARCH
 
 # -----------------------------------------------------------------------------
 # Utility functions
@@ -278,13 +291,13 @@ wait_for_partitions_to_appear()
 
 create_fit_image()
 {
-    if [ "$CB_SETUP_ARCH" != "x86_64" ]; then
+    if [ "$ARCH" != "x86_64" ]; then
          # Devicetree binaries
          local dtbs=""
          local kernel=""
          local compression=""
 
-         if [ "$CB_SETUP_ARCH" == "arm" ]; then
+         if [ "$ARCH" == "arm" ]; then
              kernel="zImage"
              compression="none"
              dtbs=" \
@@ -296,8 +309,8 @@ create_fit_image()
              compression="lz4"
 
              # Compress image
-             rm -f arch/${CB_SETUP_ARCH}/boot/Image.lz4 || true
-             lz4 arch/${CB_SETUP_ARCH}/boot/Image arch/${CB_SETUP_ARCH}/boot/Image.lz4
+             rm -f arch/${ARCH}/boot/Image.lz4 || true
+             lz4 arch/${ARCH}/boot/Image arch/${ARCH}/boot/Image.lz4
 
              dtbs=" \
 		    -b arch/arm64/boot/dts/qcom/sc7180-trogdor-coachz-r3.dtb \
@@ -310,8 +323,8 @@ create_fit_image()
                   "
          fi
 
-         mkimage -D "-I dts -O dtb -p 2048" -f auto -A ${CB_SETUP_ARCH} -O linux -T kernel -C $compression -a 0 \
-                 -d arch/${CB_SETUP_ARCH}/boot/$kernel $dtbs \
+         mkimage -D "-I dts -O dtb -p 2048" -f auto -A ${ARCH} -O linux -T kernel -C $compression -a 0 \
+                 -d arch/${ARCH}/boot/$kernel $dtbs \
                  kernel.itb
     else
 	echo "TODO: create x86_64 FIT image, now using a raw image"
@@ -413,7 +426,7 @@ cmd_setup_rootfs()
 
 cmd_get_toolchain()
 {
-    if [ "$CB_SETUP_ARCH" == "x86_64" ]; then
+    if [ "$ARCH" == "x86_64" ]; then
         echo "Using default distro toolchain"
         return 0
     fi
@@ -458,10 +471,10 @@ cmd_config_kernel()
     cd kernel
 
     # Create .config
-    if [ "$CB_SETUP_ARCH" == "arm" ]; then
+    if [ "$ARCH" == "arm" ]; then
         scripts/kconfig/merge_config.sh -m arch/arm/configs/multi_v7_defconfig $CWD/fragments/multi-v7/chromebooks.cfg
         make olddefconfig
-    elif [ "$CB_SETUP_ARCH" == "arm64" ]; then
+    elif [ "$ARCH" == "arm64" ]; then
         scripts/kconfig/merge_config.sh -m arch/arm64/configs/defconfig $CWD/fragments/arm64/chromebooks.cfg $CWD/fragments/arm64/mediatek.cfg $CWD/fragments/arm64/qualcomm.cfg
         make olddefconfig
     else
@@ -481,7 +494,7 @@ cmd_build_kernel()
     cd kernel
 
     # Build kernel + modules + device tree blob
-    if [ "$CB_SETUP_ARCH" == "arm" ]; then
+    if [ "$ARCH" == "arm" ]; then
         make W=1 zImage modules dtbs $(jopt)
     else
 	    make W=1 $(jopt)
@@ -530,7 +543,7 @@ cmd_build_vboot()
 
     echo "Sign the kernels to boot with Chrome OS devices..."
 
-    case "$CB_SETUP_ARCH" in
+    case "$ARCH" in
         arm|arm64)
             arch="arm"
             bootloader="boot_params"
@@ -572,7 +585,7 @@ cmd_deploy_vboot()
         local boot="$CB_SETUP_STORAGE1"
         sudo dd if=kernel/kernel.vboot of="$boot" bs=4M
     else
-        if [ "$CB_SETUP_ARCH" != "x86_64" ]; then
+        if [ "$ARCH" != "x86_64" ]; then
             sudo cp -av kernel/kernel.itb "$ROOTFS_DIR/boot"
 	else
             echo "WARNING: Not implemented for x86_64."
