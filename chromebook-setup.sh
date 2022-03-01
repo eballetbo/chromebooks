@@ -181,7 +181,6 @@ while true; do
             ;;
         --architecture)
             ARCH="$2"
-            [ "$ARCH" = "amd64" ] && ARCH="x86_64"
             shift 2
             ;;
         --)
@@ -228,10 +227,21 @@ fi
     print_usage_exit
 }
 
-[ "$ARCH" = "arm" ] || [ "$ARCH" == "arm64" ] || [ "$ARCH" == "x86_64" ] || {
-    echo "Incorrect architecture $ARCH was set."
-    print_usage_exit
-}
+case "$ARCH" in
+    arm)
+        ARCH="arm"
+        ;;
+    arm64|aarch64)
+        ARCH="arm64"
+        ;;
+    x86_64|amd64)
+        ARCH="x86_64"
+        ;;
+    *)
+        echo "Incorrect architecture $ARCH was set."
+        print_usage_exit
+        ;;
+esac
 
 if [ "$ARCH" == "x86_64" ]; then
     DEBIAN_ROOTFS_URL="$ROOTFS_BASE_URL/debian-gnome-desktop-$DEBIAN_SUITE-amd64.tar.gz"
