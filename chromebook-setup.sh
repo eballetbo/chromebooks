@@ -271,7 +271,7 @@ ensure_command() {
     # ensure_command foo foo-package
     which "$1" 2>/dev/null 1>/dev/null ||
     sudo which "$1" 2>/dev/null 1>/dev/null || (
-        echo "Install required command $1 from package $2, e.g. sudo apt-get install $2"
+        echo "Install required command $1 from package $2, e.g. sudo $pkg_mgr install $2"
         exit 1
     )
 }
@@ -686,6 +686,12 @@ cmd_deploy_kernel_only()
     cmd_deploy_vboot
     cmd_eject_storage
 }
+
+if grep -qi fedora /etc/os-release; then
+  pkg_mgr="dnf"
+else
+  pkg_mgr="apt"
+fi
 
 # These commands are required
 ensure_command bc bc
