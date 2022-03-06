@@ -40,17 +40,17 @@ Note: After enabling developer mode, you will need to press Ctrl-D each
 2. Type root to the login screen.
 3. Then type this to enable USB booting:
 ```sh
-$ enable_dev_usb_boot
+enable_dev_usb_boot
 ```
 4. Reboot the system to allow the change to take effect.
 
 ## Create a USB or SD for dual booting
 ```sh
-$ ./chromebook-setup.sh help
+./chromebook-setup.sh help
 ```
 For example, to create bootable SD card for the Samsung Chromebook Plus (arm64):
 ```sh
-$ ./chromebook-setup.sh do_everything --architecture=arm64 --storage=/dev/sdX
+./chromebook-setup.sh do_everything --architecture=arm64 --storage=/dev/sdX
 ```
 
 The default username and password for the image is debian in lowercase.
