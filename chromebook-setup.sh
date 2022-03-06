@@ -447,7 +447,7 @@ cmd_setup_rootfs()
         # Download the Debian rootfs archive if it is not already there.
         if [ ! -f "$debian_archive" ]; then
             echo "Rootfs archive not found, downloading from $debian_url"
-            wget "$debian_url"
+            curl -OL "$debian_url"
         fi
 
         # Untar the rootfs archive.
@@ -698,7 +698,6 @@ ensure_command mkfs.ext4 e2fsprogs
 ensure_command mkimage u-boot-tools
 ensure_command udisksctl udisks2
 ensure_command vbutil_kernel vboot-utils
-ensure_command wget wget
 
 # Run the command if it's valid, otherwise abort
 type cmd_$cmd > /dev/null 2>&1 || print_usage_exit
