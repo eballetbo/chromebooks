@@ -101,7 +101,7 @@ echo "Available commands:
     Install the rootfs on the storage device specified with --storage.
     If ARCHIVE is not provided then the default one will be automatically
     downloaded and used.  The standard rootfs URL is:
-        $DEBIAN_ROOTFS_URL
+        $ROOTFS_URL
 
   get_toolchain
     Download and extract the cross-compiler toolchain needed to build
@@ -238,21 +238,53 @@ case "$ARCH" in
         ARCH="x86_64"
         ;;
     *)
-        echo "Incorrect architecture $ARCH was set."
+        echo "Incorrect architecture $ARCH was set. Valid architectures are:"
+        echo "arm, arm64, x86_64"
         print_usage_exit
         ;;
 esac
 
+if [ -n "$CB_DISTRO" ]; then
+    case "$CB_DISTRO" in
+        fedora)
+            CB_DISTRO="fedora"
+            ;;
+        debian)
+            CB_DISTRO="debian"
+            ;;
+        *)
+            echo "Incorrect distro $CB_DISTRO was set. Valid distros are:"
+            echo "fedora, debian"
+            print_usage_exit
+            ;;
+    esac
+fi
+
 if [ "$ARCH" == "x86_64" ]; then
-    DEBIAN_ROOTFS_URL="$ROOTFS_BASE_URL/debian-gnome-desktop-$DEBIAN_SUITE-amd64.tar.gz"
+    if [ "$CB_DISTRO" = "fedora" ]; then
+        echo "fedora not supported on $ARCH"
+        exit 0
+    fi
+
+    ROOTFS_URL="$ROOTFS_BASE_URL/debian-gnome-desktop-$DEBIAN_SUITE-amd64.tar.gz"
 elif [ "$ARCH" == "arm64" ]; then
-    DEBIAN_ROOTFS_URL="$ROOTFS_BASE_URL/debian-gnome-desktop-$DEBIAN_SUITE-$ARCH.tar.gz"
+    if [ "$CB_DISTRO" = "fedora" ]; then
+        ROOTFS_URL="https://download.fedoraproject.org/pub/fedora/linux/releases/35/Workstation/aarch64/images/Fedora-Workstation-35-1.2.aarch64.raw.xz"
+    else
+        ROOTFS_URL="$ROOTFS_BASE_URL/debian-gnome-desktop-$DEBIAN_SUITE-$ARCH.tar.gz"
+    fi
+
     TOOLCHAIN="$ARM64_TOOLCHAIN"
     TOOLCHAIN_URL="$ARM64_TOOLCHAIN_URL"
     [ -z "$CROSS_COMPILE" ] && export CROSS_COMPILE=\
 $PWD/$TOOLCHAIN/bin/aarch64-none-linux-gnu-
 else
-    DEBIAN_ROOTFS_URL="$ROOTFS_BASE_URL/debian-gnome-desktop-$DEBIAN_SUITE-armhf.tar.gz"
+    if [ "$CB_DISTRO" = "fedora" ]; then
+        echo "fedora not supported on $ARCH"
+        exit 0
+    fi
+
+    ROOTFS_URL="$ROOTFS_BASE_URL/debian-gnome-desktop-$DEBIAN_SUITE-armhf.tar.gz"
     [ -z "$CROSS_COMPILE" ] && export CROSS_COMPILE=\
 $PWD/$TOOLCHAIN/bin/arm-none-linux-gnueabihf-
 fi
@@ -435,24 +467,39 @@ cmd_mount_rootfs()
 
 cmd_setup_rootfs()
 {
-    local debian_url="${1:-$DEBIAN_ROOTFS_URL}"
-    local debian_archive=$(basename $debian_url)
+    local archive=$(basename $ROOTFS_URL)
 
-    echo "$debian_url"
-    if test -d "$debian_url"; then
+    echo "$ROOTFS_URL"
+    if test -d "$ROOTFS_URL"; then
         # Copy the rootfs directory.
         echo "Copying files into the partition"
-        sudo cp -a "$debian_url"/* "$ROOTFS_DIR"
+        sudo cp -a "$ROOTFS_URL"/* "$ROOTFS_DIR"
     else
-        # Download the Debian rootfs archive if it is not already there.
-        if [ ! -f "$debian_archive" ]; then
-            echo "Rootfs archive not found, downloading from $debian_url"
+        # Download the rootfs archive if it is not already there
+        unxz_archive="$(echo "$archive" | sed "s/.xz//g")"
+        if [ ! -f "$archive" ] && [ ! -f "$unxz_archive" ]; then
+            echo "Rootfs archive not found, downloading from $ROOTFS_URL"
             curl -OL "$debian_url"
         fi
 
         # Untar the rootfs archive.
         echo "Extracting files onto the partition"
-        sudo tar xf "$debian_archive" -C "$ROOTFS_DIR"
+        if [ "$CB_DISTRO" = "fedora" ]; then
+            if  [ ! -f "$unxz_archive" ]; then
+                xz -d "$archive"
+            fi
+
+            dev="$(sudo losetup --show -fP $unxz_archive)"
+            local dev_base=$(basename $dev)
+            mkdir -p fragments/${dev_base}p3
+            sudo mount ${dev}p3 fragments/${dev_base}p3
+            sudo cp -a fragments/${dev_base}p3/root/* "$ROOTFS_DIR"
+            sudo umount fragments/${dev_base}p3
+            sudo losetup -D
+            rm -r fragments/${dev_base}p3
+        else
+            sudo tar xf "$archive" -C "$ROOTFS_DIR"
+        fi
     fi
 
     echo "Done."
@@ -504,11 +551,12 @@ cmd_config_kernel()
 
     cd $CB_KERNEL_PATH
 
-    if [ -n $CB_DISTRO ]; then
+    if [ -n "$CB_DISTRO" ]; then
         if ! [ -f $CWD/fragments/distro/$CB_DISTRO.cfg ]; then
             echo "Distro $CB_DISTRO is not supported yet"
             print_usage_exit
         fi
+
         DISTRO_CFG="$CWD/fragments/distro/$CB_DISTRO.cfg"
     fi
 
