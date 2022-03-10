@@ -19,11 +19,3 @@ KERNEL_URL="git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git"
 # Current Working Directory
 CWD=$PWD
 
-# Chromebook-specific config.
-
-declare -A chromebook_names=(
-    ["C100PA"]="ASUS Chromebook Flip C100PA"
-    ["NBCJ2"]="CTL J2 Chromebook for Education"
-    ["XE513C24"]="Samsung Chromebook Plus"
-)
-

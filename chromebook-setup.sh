@@ -68,19 +68,11 @@ Options:
     Path to the Chromebook storage device or directory i.e.
       /dev/sdb for the SD card.
       /srv/nfs/rootfs for a NFS mount point.
-"
-echo "  --architecture=ARCH
-    Chromebook architecture, needs to be one of the following: arm | arm64 | x86_64"
 
-echo "Supported devices:
+  --architecture=ARCH
+    Chromebook architecture, needs to be one of the following: arm | arm64 | x86_64
 
-"
-for chromebook_variant in "${!chromebook_names[@]}"
-do
-    echo "      $chromebook_variant (${chromebook_names[$chromebook_variant]})"
-done
-
-echo "Available commands:
+Available commands:
 
   help
     Print this help message.
