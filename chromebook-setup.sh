@@ -281,14 +281,14 @@ find_partitions_by_id()
     unset CB_SETUP_STORAGE1 CB_SETUP_STORAGE2
 
     for device in /dev/disk/by-id/*; do
-        if [ `realpath $device` = $CB_SETUP_STORAGE ]; then
+        if [ "$(realpath $device)" = $CB_SETUP_STORAGE ]; then
             if echo "$device" | grep -q -- "-part[0-9]*$"; then
                 echo "device $MMC must not be a partition part ($device)" 1>&2
                 exit 1
             fi
-            for part_id in `ls "$device-part"*`; do
-                local part=`realpath $part_id`
-                local part_no=`echo $part_id | sed -e 's/.*-part//g'`
+            for part_id in "$(ls "$device-part"*)"; do
+                local part="$(realpath $part_id)"
+                local part_no="$(echo $part_id | sed -e 's/.*-part//g')"
                 if test "$part_no" = 1; then
                     CB_SETUP_STORAGE1=$part
                 elif test "$part_no" = 2; then
@@ -303,7 +303,7 @@ find_partitions_by_id()
 wait_for_partitions_to_appear()
 {
     for device in /dev/disk/by-id/*; do
-        if [ `realpath $device` = $CB_SETUP_STORAGE ]; then
+        if [ "$(realpath $device)" = $CB_SETUP_STORAGE ]; then
             if echo "$device" | grep -q -- "-part[0-9]*$"; then
                 echo "device $CB_SETUP_STORAGE must not be a partition part ($device)" 1>&2
                 exit 1
@@ -425,7 +425,7 @@ cmd_mount_rootfs()
     echo "Mounting rootfs partition..."
 
     udisksctl mount -b "$CB_SETUP_STORAGE2" > /dev/null 2>&1 || true
-    ROOTFS_DIR=`findmnt -n -o TARGET --source $CB_SETUP_STORAGE2`
+    ROOTFS_DIR="$(findmnt -n -o TARGET --source $CB_SETUP_STORAGE2)"
 
     # Verify that the disk is mounted, otherwise exit
     if [ -z "$ROOTFS_DIR" ]; then exit 1; fi
