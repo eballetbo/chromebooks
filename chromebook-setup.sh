@@ -278,7 +278,7 @@ find_partitions_by_id()
                 echo "device $MMC must not be a partition part ($device)" 1>&2
                 exit 1
             fi
-            for part_id in "$(ls "$device-part"*)"; do
+            for part_id in $(ls "$device-part"*); do
                 local part="$(realpath $part_id)"
                 local part_no="$(echo $part_id | sed -e 's/.*-part//g')"
                 if test "$part_no" = 1; then
