@@ -504,7 +504,7 @@ cmd_config_kernel()
 
     cd $CB_KERNEL_PATH
 
-    if [ -n $CB_DISTRO ]; then
+    if [ -n "$CB_DISTRO" ]; then
         if ! [ -f $CWD/fragments/distro/$CB_DISTRO.cfg ]; then
             echo "Distro $CB_DISTRO is not supported yet"
             print_usage_exit
