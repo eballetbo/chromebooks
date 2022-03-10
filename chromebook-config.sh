@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # chromebook-config.sh - Configuration file for chromebook-setup
 
 TOOLCHAIN_VERSION="10.3-2021.07"
