@@ -20,7 +20,9 @@ source chromebook-config.sh
 
 print_usage_exit()
 {
-    local arg_ret="${1-1}"
+    local arg_ret
+
+    arg_ret="${1-1}"
 
     echo "
 Chromebook developer tool.
@@ -279,8 +281,11 @@ find_partitions_by_id()
                 exit 1
             fi
             for part_id in $(ls "$device-part"*); do
-                local part="$(realpath $part_id)"
-                local part_no="$(echo $part_id | sed -e 's/.*-part//g')"
+                local part
+                local part_no
+
+                part="$(realpath $part_id)"
+                part_no="$(echo $part_id | sed -e 's/.*-part//g')"
                 if test "$part_no" = 1; then
                     CB_SETUP_STORAGE1=$part
                 elif test "$part_no" = 2; then
@@ -427,8 +432,11 @@ cmd_mount_rootfs()
 
 cmd_setup_rootfs()
 {
-    local debian_url="${1:-$DEBIAN_ROOTFS_URL}"
-    local debian_archive=$(basename $debian_url)
+    local debian_url
+    local debian_archive
+
+    debian_url="${1:-$DEBIAN_ROOTFS_URL}"
+    debian_archive=$(basename $debian_url)
 
     echo "$debian_url"
     if test -d "$debian_url"; then
@@ -470,16 +478,19 @@ cmd_get_toolchain()
 
 cmd_get_kernel()
 {
+    local arg_url
+    local tag
+
     echo "Creating initial git repository if not already present..."
 
-    local arg_url="${1-$KERNEL_URL}"
+    arg_url="${1-$KERNEL_URL}"
 
     # 1. Create initial git repository if not already present
     # 2. Checkout the latest release tagged
     [ -d ${CB_KERNEL_PATH} ] || {
         git clone "$arg_url" ${CB_KERNEL_PATH}
         cd ${CB_KERNEL_PATH}
-        local tag=$(git describe --abbrev=0 --exclude="*rc*")
+        tag=$(git describe --abbrev=0 --exclude="*rc*")
         if test ${KERNEL_TAG}; then
             tag=${KERNEL_TAG}
         fi
@@ -610,13 +621,15 @@ cmd_build_vboot()
 
 cmd_deploy_vboot()
 {
+    local boot
+
     echo "Deploy vboot image on the boot partition..."
 
     if $storage_is_media_device; then
         find_partitions_by_id
 
         # Install it on the boot partition
-        local boot="$CB_SETUP_STORAGE1"
+        boot="$CB_SETUP_STORAGE1"
         sudo dd if=$CB_KERNEL_PATH/kernel.vboot of="$boot" bs=4M
     else
         if [ "$ARCH" != "x86_64" ]; then
