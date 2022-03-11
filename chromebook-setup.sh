@@ -712,6 +712,6 @@ ensure_command vbutil_kernel vboot-utils
 
 # Run the command if it's valid, otherwise abort
 type cmd_$cmd > /dev/null 2>&1 || print_usage_exit
-cmd_$cmd $@
+cmd_$cmd "$@"
 
 exit 0
