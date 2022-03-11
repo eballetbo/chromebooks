@@ -280,7 +280,7 @@ find_partitions_by_id()
                 echo "device $MMC must not be a partition part ($device)" 1>&2
                 exit 1
             fi
-            for part_id in $(ls "$device-part"*); do
+            for part_id in "$device-part"*; do
                 local part
                 local part_no
 
