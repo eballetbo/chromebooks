@@ -634,9 +634,9 @@ cmd_deploy_vboot()
     else
         if [ "$ARCH" != "x86_64" ]; then
             sudo cp -av $CB_KERNEL_PATH/kernel.itb "$ROOTFS_DIR/boot"
-	else
+	    else
             echo "WARNING: Not implemented for x86_64."
-	fi
+	    fi
     fi
 
     echo "Done."
