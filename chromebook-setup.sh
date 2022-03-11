@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-# This file:
-#
-#  - Chromebook developer tool to create a Debian bootable media device.
+
+# SPDX-License-Identifier:  GPL-2.0+
+# Chromebook Developer Tool to automate the creation of media bootable devices for Chromebooks
 #
 # Usage:
 #
 #  ./chromebook-setup.sh COMMAND [ARGS] OPTIONS
 #
 # Based on mali_chromebook-setup_006 scripts by Guillaume Tucker
-#  - https://community.arm.com/graphics/b/blog/posts/linux-on-chromebook-with-arm-mali-gpu
+#  - https://community.arm.com/arm-community-blogs/b/graphics-gaming-and-vr-blog/posts/linux-on-chromebook-with-arm-mali-gpu
 #
 
 # Exit on error. Append "|| true" if you expect an error.
