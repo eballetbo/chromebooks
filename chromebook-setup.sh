@@ -377,7 +377,7 @@ cmd_format_storage()
 
     echo "Creating partitions on $CB_SETUP_STORAGE"
     df 2>&1 | grep "$CB_SETUP_STORAGE" || true
-    read -p "Continue? [N/y] " yn
+    read -rp "Continue? [N/y] " yn
     [ "$yn" = "y" ] || {
         echo "Aborted"
         exit 1
