@@ -57,6 +57,10 @@ Options:
   and --architecture are compulsory but the latter is also optional
   if the ARCH environment variable has already been set.
 
+  --image=IMAGE
+    This is the uncompressed raw image file name.
+    Example: --image=Fedora-Workstation-36-1.5.aarch64.raw
+
   --distro=NAME
     Name of the Linux distribution that the kernel needs to support.
     By setting a distro value, Kconfig symbols needed by a particular
@@ -96,6 +100,22 @@ Available commands:
     If ARCHIVE is not provided then the default one will be automatically
     downloaded and used.  The standard rootfs URL is:
         $DEBIAN_ROOTFS_URL
+
+  deploy_fedora
+    prepare media for fedora ARM
+    For example, to deploy the default Fedora Image:
+
+        $0 deploy_fedora --image=name.raw --architecture=arm64 --storage=/dev/sdX
+
+  setup_fedora_rootfs
+    Install the fedora rootfs on the storage device specified with --storage.
+    if no archive is provided the default one is used:
+        $GETFEDORA
+
+  setup_fedora_kernel
+    Download and extract a known kernel that works for chromebooks
+    this also copies the kernel packages to the fedora rootfs and generate
+    modules.dep and map files, to enable modules autoload on first boot.
 
   get_toolchain
     Download and extract the cross-compiler toolchain needed to build
@@ -153,13 +173,17 @@ or to do the same to use NFS for the root filesystem:
     exit $arg_ret
 }
 
-opts=$(getopt -o "h,s:" -l "help,distro:,kernel:,storage:,architecture:" -- "$@")
+opts=$(getopt -o "h,s:" -l "help,image:,distro:,kernel:,storage:,architecture:" -- "$@")
 eval set -- "$opts"
 
 while true; do
     case "$1" in
         --help|-h)
             print_usage_exit
+            ;;
+        --image)
+            IMAGE="$2"
+            shift 2
             ;;
         --distro)
             CB_DISTRO="$2"
@@ -343,15 +367,25 @@ create_fit_image()
              rm -f arch/${ARCH}/boot/Image.lz4 || true
              lz4 arch/${ARCH}/boot/Image arch/${ARCH}/boot/Image.lz4
 
-             dtbs=" \
-		    -b arch/arm64/boot/dts/qcom/sc7180-trogdor-coachz-r3.dtb \
-		    -b arch/arm64/boot/dts/qcom/sc7180-trogdor-lazor-r3-kb.dtb \
-		    -b arch/arm64/boot/dts/mediatek/mt8173-elm.dtb \
-		    -b arch/arm64/boot/dts/mediatek/mt8173-elm-hana.dtb \
-		    -b arch/arm64/boot/dts/mediatek/mt8183-kukui-krane-sku176.dtb \
-		    -b arch/arm64/boot/dts/rockchip/rk3399-gru-kevin.dtb\
-		    -b arch/arm64/boot/dts/rockchip/rk3399-gru-scarlet-inx.dtb \
-                  "
+             #fedora kernel does not generate these device-tree
+            if [ "$CB_DISTRO" == "fedora" ]; then
+                dtbs=" \
+                    -b arch/arm64/boot/dts/qcom/sc7180-trogdor-coachz-r3.dtb \
+                    -b arch/arm64/boot/dts/qcom/sc7180-trogdor-lazor-r3-kb.dtb \
+                    -b arch/arm64/boot/dts/rockchip/rk3399-gru-kevin.dtb\
+                    -b arch/arm64/boot/dts/rockchip/rk3399-gru-scarlet-inx.dtb \
+                    "
+            else
+                dtbs=" \
+                    -b arch/arm64/boot/dts/qcom/sc7180-trogdor-coachz-r3.dtb \
+                    -b arch/arm64/boot/dts/qcom/sc7180-trogdor-lazor-r3-kb.dtb \
+                    -b arch/arm64/boot/dts/mediatek/mt8173-elm.dtb \
+                    -b arch/arm64/boot/dts/mediatek/mt8173-elm-hana.dtb \
+                    -b arch/arm64/boot/dts/mediatek/mt8183-kukui-krane-sku176.dtb \
+                    -b arch/arm64/boot/dts/rockchip/rk3399-gru-kevin.dtb\
+                    -b arch/arm64/boot/dts/rockchip/rk3399-gru-scarlet-inx.dtb \
+                    "
+            fi
          fi
 
          mkimage -D "-I dts -O dtb -p 2048" -f auto -A ${ARCH} -O linux -T kernel -C $compression -a 0 \
@@ -653,6 +687,111 @@ cmd_eject_storage()
     udisksctl power-off -b "$CB_SETUP_STORAGE" > /dev/null 2>&1 || true
 
     echo "All done."
+}
+
+# -----------------------------------------------------------------------------
+# Experimental: Create Fedora images for Chromebooks
+cmd_setup_fedora_rootfs()
+{
+    local loopdev
+    local image
+    local btrfs
+
+    image=$IMAGE
+    loopdev="$(sudo losetup --show -fP $image)"
+    btrfs="${image/raw/btrfs}"
+    sudo dd if="${loopdev}p3" of="/var/tmp/$btrfs" conv=fsync status=progress
+    sudo losetup -D
+    mkdir ./tmpdir
+    sudo mount "/var/tmp/$btrfs" ./tmpdir
+    sleep 3
+    echo "Disable SELINUX"
+    sudo sed -i 's/SELINUX=enforcing/SELINUX=permissive/' ./tmpdir/root/etc/selinux/config
+
+    echo "remove root password"
+    sudo sed -i 's/root:!locked:/root:/' ./tmpdir/root/etc/shadow
+
+    echo "modifying fstab"
+    sudo sed -i '1,14s/^[^#]/# &/g' ./tmpdir/root/etc/fstab
+    sudo sed -i \
+    -e '/home/s/home//' \
+    -e '/home/s/btrfs/ext4/' \
+    -e 's/subvol=home,compress=zstd:1/defaults/' ./tmpdir/root/etc/fstab
+
+    # Copy the ROOTFS to media
+    echo "copying ROOTFS to partition"
+    sudo cp -ar "./tmpdir/root/"* "$ROOTFS_DIR"
+    sudo umount ./tmpdir
+    sudo rm -rf ./tmpdir
+
+    echo "Done."
+}
+
+cmd_setup_fedora_kernel()
+{
+    local kernel_version="5.16.2-0.test.fc35.aarch64"
+
+    # Download a known kernel that works for Chromebooks
+    [ -f kernel-core-$kernel_version.rpm ] || curl -OL https://download.copr.fedorainfracloud.org/results/eballetbo/fedora/fedora-35-aarch64/03507242-kernel/kernel-core-$kernel_version.rpm
+    [ -f kernel-modules-$kernel_version.rpm ] || curl -OL https://download.copr.fedorainfracloud.org/results/eballetbo/fedora/fedora-35-aarch64/03507242-kernel/kernel-modules-$kernel_version.rpm
+
+    # Extract and copy the kernel packages to the rootfs
+    mkdir ./tmpdir && cd ./tmpdir
+    rpm2cpio ../kernel-core-$kernel_version.rpm | cpio -idmv
+    rpm2cpio ../kernel-modules-$kernel_version.rpm | cpio -idmv
+
+    sudo cp -ar ./usr/* "$ROOTFS_DIR"/usr
+    sudo cp -ar ./lib/* "$ROOTFS_DIR"/lib
+
+    # Generate modules.dep and map files, so modules autoload on first boot
+    depmod -b "$ROOTFS_DIR" $kernel_version
+
+    # Create a directory tree similar to the kernel source tree so we can reuse some functions
+    # like cmd_build_vboot and cmd_deploy_vboot
+    mkdir -p arch/arm64/boot/dts
+    cp $ROOTFS_DIR/lib/modules/$kernel_version/vmlinuz arch/arm64/boot/Image.gz
+    gunzip arch/arm64/boot/Image.gz
+    cp -fr $ROOTFS_DIR/lib/modules/$kernel_version/dtb/* arch/arm64/boot/dts/
+
+    create_fit_image
+
+    cd - > /dev/null
+
+    export CB_KERNEL_PATH=./tmpdir
+    cmd_build_vboot
+    cmd_deploy_vboot
+
+    sudo rm -rf ./tmpdir
+
+}
+
+cmd_deploy_fedora()
+{
+    if [ ! -f "$IMAGE" ] && [ "$IMAGE" != "" ]; then
+        echo "Error: $IMAGE not found please choose an existing image."
+        exit 1
+    fi
+    if [ -z "$IMAGE" ]; then
+        fedora_image=$(basename $GETFEDORA)
+        IMAGE=$(basename -s .xz $GETFEDORA)
+        if [ ! -f "$IMAGE" ]; then
+            echo "Downloading the default fedora image."
+            curl -OL $GETFEDORA
+            if [ -f "$fedora_image" ]; then
+                echo "Decompress .xz image"
+                sudo unxz "$fedora_image"
+            fi
+        fi
+
+    fi
+
+    CB_DISTRO=fedora
+
+    cmd_format_storage
+    cmd_mount_rootfs
+    cmd_setup_fedora_rootfs
+    cmd_setup_fedora_kernel
+    cmd_eject_storage
 }
 
 cmd_do_everything()

@@ -14,6 +14,9 @@ ARM64_TOOLCHAIN_URL="https://armkeil.blob.core.windows.net/developer/Files/downl
 DEBIAN_SUITE="sid"
 ROOTFS_BASE_URL="https://people.collabora.com/~eballetbo/debian/images/"
 
+# Fedora rootfs images
+GETFEDORA="https://download.fedoraproject.org/pub/fedora/linux/releases/36/Workstation/aarch64/images/Fedora-Workstation-36-1.5.aarch64.raw.xz"
+
 KERNEL_URL="git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git"
 
 # Current Working Directory
