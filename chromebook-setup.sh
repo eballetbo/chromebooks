@@ -408,7 +408,7 @@ create_fit_image()
             fi
          fi
 
-	 local initrd_option=""
+        local initrd_option="-i arch/${ARCH}/boot/initramfs-$kernel_version.img"
          if [ -n "$INITRD" ]; then
             initrd_option="-i $INITRD"
          fi
@@ -787,6 +787,25 @@ cmd_setup_fedora_kernel()
     gunzip arch/arm64/boot/Image.gz
     cp -fr $ROOTFS_DIR/lib/modules/$kernel_version/dtb/* arch/arm64/boot/dts/
 
+    if [ -z "$INITRD" ]; then
+        # Generate initramfs for the kernel
+        # chroot into qemu-aarch-static to generate initramfs for aarch64
+        sudo mount -t sysfs sysfs $ROOTFS_DIR/sys
+        sudo mount -t proc proc $ROOTFS_DIR/proc
+        sudo mount -t tmpfs tmpfs $ROOTFS_DIR/tmp
+        sudo mount -t devtmpfs devtmpfs $ROOTFS_DIR/dev
+        sudo cp $(which qemu-aarch64-static) $ROOTFS_DIR/usr/bin
+        cat << EOF | sudo chroot /var$ROOTFS_DIR qemu-aarch64-static /bin/bash
+        dracut --force -v --add-drivers "ulpi usb-storage phy-qcom-usb-hs-28nm \
+        phy-qcom-usb-ss ocmem dwc3 dwc3-of-simple dwc3-pci ehci-platform xhci-plat-hcd \
+        i2c-qcom-geni i2c-qup icc-osm-l3 qcom-spmi-pmic phy-qcom-qmp phy-qcom-qusb2 \
+        phy-qcom-usb-hs qcom_aoss qcom-apcs-ipc-mailbox llcc-qcom nvmem_qfprom smem \
+        smp2p dwc3-qcom \
+        " /boot/initramfs-$kernel_version.img --kver $kernel_version --kmoddir /lib/modules/$kernel_version
+        exit
+EOF
+        sudo cp $ROOTFS_DIR/boot/initramfs-$kernel_version.img arch/arm64/boot/
+    fi
     create_fit_image
 
     cd - > /dev/null
@@ -796,7 +815,12 @@ cmd_setup_fedora_kernel()
     cmd_deploy_vboot
 
     sudo rm -rf ./tmpdir
-
+    if [ -z "$INITRD" ]; then
+        sudo umount tmpfs
+        sudo umount devtmpfs
+        sudo umount proc
+        sudo umount sysfs
+    fi
 }
 
 cmd_deploy_fedora()
