@@ -78,6 +78,9 @@ Options:
   --architecture=ARCH
     Chromebook architecture, needs to be one of the following: arm | arm64 | x86_64
 
+  --kparams=PARAMETERS
+    Additional parameters to be added to the kernel command line.
+
 Available commands:
 
   help
@@ -173,7 +176,7 @@ or to do the same to use NFS for the root filesystem:
     exit $arg_ret
 }
 
-opts=$(getopt -o "h,s:" -l "help,image:,distro:,kernel:,storage:,architecture:" -- "$@")
+opts=$(getopt -o "h,s:" -l "help,image:,distro:,kernel:,storage:,architecture:,kparams:" -- "$@")
 eval set -- "$opts"
 
 while true; do
@@ -199,6 +202,10 @@ while true; do
             ;;
         --architecture)
             ARCH="$2"
+            shift 2
+            ;;
+        --kparams)
+            EXTRA_KPARAMS="$2"
             shift 2
             ;;
         --)
@@ -618,7 +625,7 @@ cmd_build_vboot()
     local arch
     local bootloader
     local vmlinuz
-    local extra_kparams
+    local extra_kparams=$EXTRA_KPARAMS
 
     echo "Sign the kernels to boot with Chrome OS devices..."
 
@@ -633,7 +640,7 @@ cmd_build_vboot()
             [ -f ./bootstub/bootstub.efi ] || cmd_build_bootstub
             bootloader="./bootstub/bootstub.efi"
             vmlinuz="$CB_KERNEL_PATH/arch/x86/boot/bzImage"
-            extra_kparams="tpm_tis.force=1 tpm_tis.interrupts=0"
+            extra_kparams="${extra_kparams} tpm_tis.force=1 tpm_tis.interrupts=0"
             ;;
         *)
             echo "Unsupported vboot architecture"
