@@ -81,6 +81,9 @@ Options:
   --kparams=PARAMETERS
     Additional parameters to be added to the kernel command line.
 
+  --initrd=INITRD
+    Initrd to be added to the FIT image.
+
 Available commands:
 
   help
@@ -176,7 +179,7 @@ or to do the same to use NFS for the root filesystem:
     exit $arg_ret
 }
 
-opts=$(getopt -o "h,s:" -l "help,image:,distro:,kernel:,storage:,architecture:,kparams:" -- "$@")
+opts=$(getopt -o "h,s:" -l "help,image:,distro:,kernel:,storage:,architecture:,kparams:,initrd:" -- "$@")
 eval set -- "$opts"
 
 while true; do
@@ -206,6 +209,10 @@ while true; do
             ;;
         --kparams)
             EXTRA_KPARAMS="$2"
+            shift 2
+            ;;
+        --initrd)
+            INITRD="$2"
             shift 2
             ;;
         --)
@@ -395,8 +402,12 @@ create_fit_image()
             fi
          fi
 
+	 local initrd_option=""
+         if [ -n "$INITRD" ]; then
+            initrd_option="-i $INITRD"
+         fi
          mkimage -D "-I dts -O dtb -p 2048" -f auto -A ${ARCH} -O linux -T kernel -C $compression -a 0 \
-                 -d arch/${ARCH}/boot/$kernel $dtbs \
+                 -d arch/${ARCH}/boot/$kernel ${initrd_option} $dtbs \
                  kernel.itb
     else
 	echo "TODO: create x86_64 FIT image, now using a raw image"
