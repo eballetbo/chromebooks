@@ -143,8 +143,14 @@ Available commands:
   build_kernel
     Compile the Linux kernel modules.
 
+  deploy_kernel
+   Install the Linux kernel as a vboot image and its modules on the rootfs.
+
+  deploy_kernel_only
+   Install only the Linux kernel as a vboot image but no its modules.
+
   deploy_kernel_modules
-    Install the Linux kernel modules on the rootfs.
+    Install only the Linux kernel modules on the rootfs but no the image.
 
   build_bootstub
     Build the ChromeOS bootstub.efi.
