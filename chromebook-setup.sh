@@ -742,6 +742,11 @@ cmd_setup_fedora_rootfs()
     -e '/home/s/btrfs/ext4/' \
     -e 's/subvol=home,compress=zstd:1/defaults/' ./tmpdir/root/etc/fstab
 
+    # Insert the Kernel update script
+    echo "Inserting Kernel Update script"
+    sudo chmod 777 scripts/96-chromebook.install
+    sudo cp scripts/96-chromebook.install ./tmpdir/root/usr/lib/kernel/install.d/
+
     # Copy the ROOTFS to media
     echo "copying ROOTFS to partition"
     sudo cp -ar "./tmpdir/root/"* "$ROOTFS_DIR"
