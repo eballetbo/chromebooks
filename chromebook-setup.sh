@@ -392,6 +392,7 @@ create_fit_image()
                 dtbs=" \
                     -b arch/arm64/boot/dts/qcom/sc7180-trogdor-coachz-r3.dtb \
                     -b arch/arm64/boot/dts/qcom/sc7180-trogdor-lazor-r3-kb.dtb \
+                    -b arch/arm64/boot/dts/mediatek/mt8183-kukui-krane-sku176.dtb \
                     -b arch/arm64/boot/dts/rockchip/rk3399-gru-kevin.dtb\
                     -b arch/arm64/boot/dts/rockchip/rk3399-gru-scarlet-inx.dtb \
                     "
