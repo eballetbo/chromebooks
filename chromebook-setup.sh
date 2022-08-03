@@ -721,8 +721,8 @@ cmd_setup_fedora_rootfs()
     local image
     local btrfs
 
-    image=$IMAGE
-    loopdev="$(sudo losetup --show -fP $image)"
+    image=$(basename $IMAGE)
+    loopdev="$(sudo losetup --show -fP $IMAGE)"
     btrfs="${image/raw/btrfs}"
     sudo dd if="${loopdev}p3" of="/var/tmp/$btrfs" conv=fsync status=progress
     sudo losetup -D
