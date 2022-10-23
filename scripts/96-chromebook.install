@@ -26,7 +26,7 @@ case "$COMMAND" in
         fi
 
         rm -f "$BOOT_DIR_ABS/${kernel}.${compression}" || true
-        "${compression}" "$BOOT_DIR_ABS/${kernel}" "$BOOT_DIR_ABS/${kernel}.${compression}"
+        "${compression}" "$BOOT_DIR_ABS/${kernel}" "$BOOT_DIR_ABS/${kernel}.${compression}" 2> /dev/null
 
         #Fedora kernel generates these device tree
         #FIXME: other existing dtb in /boot/dtb/* doesn't work with the FIT image
@@ -38,7 +38,7 @@ case "$COMMAND" in
         mkimage -D "-I dts -O dtb -p 2048" -i "$BOOT_DIR_ABS/$INITRD" \
                 -f auto -A arm64 -O linux -T kernel -C $compression -a 0 \
                 -d /boot/"${kernel}.${compression}" $dtbs \
-                $BOOT_DIR_ABS/$KERNEL_ITB
+                $BOOT_DIR_ABS/$KERNEL_ITB > /dev/null
 
         if [[ -f /etc/kernel/cmdline ]]; then
             read -r -d '' -a BOOT_OPTIONS < /etc/kernel/cmdline
@@ -56,7 +56,7 @@ case "$COMMAND" in
                       --version 1 --config boot_params \
                       --bootloader boot_params \
                       --vmlinuz $BOOT_DIR_ABS/$KERNEL_ITB \
-                      --arch arm
+                      --arch arm > /dev/null
         for i in /dev/disk/by-id/*; do
             dev=$(cgpt find -t kernel)
             for device in $dev; do
@@ -64,7 +64,7 @@ case "$COMMAND" in
             done
             break
         done
-        dd if=$BOOT_DIR_ABS/$KERNEL_VBOOT of=$device bs=4M status=progress
+        dd if=$BOOT_DIR_ABS/$KERNEL_VBOOT of=$device bs=4M status=none
         ;;
     remove)
         rm -f -- "$BOOT_DIR_ABS/$INITRD" "$BOOT_DIR_ABS/$KERNEL_VBOOT" "$BOOT_DIR_ABS/$KERNEL_ITB" "boot_params"
