@@ -17,51 +17,54 @@ KERNEL_ITB="kernel.itb"
 
 case "$COMMAND" in
     add)
-        if [[ -f "$BOOT_DIR_ABS/$INITRD" ]]; then
-            kernel="${KERNEL_IMAGE##*/}-${KERNEL_VERSION}.lz4"
-            # Compression method being used by coreboot
-            compression="lz4"
-            rm -f "$BOOT_DIR_ABS/${KERNEL_IMAGE##*/}-${KERNEL_VERSION}.lz4" || true
-            lz4 "$BOOT_DIR_ABS/${KERNEL_IMAGE##*/}-${KERNEL_VERSION}" "$BOOT_DIR_ABS/${KERNEL_IMAGE##*/}-${KERNEL_VERSION}.lz4"
-
-            #Fedora kernel generates these device tree 
-            #FIXME: other existing dtb in /boot/dtb/* doesn't work with the FIT image
-            dtbs="-b /boot/dtb/qcom/sc7180-trogdor-coachz-r3.dtb \
-		          -b /boot/dtb/qcom/sc7180-trogdor-lazor-r3-kb.dtb \
-                  -b /boot/dtb/rockchip/rk3399-gru-kevin.dtb\
-                  -b /boot/dtb/rockchip/rk3399-gru-scarlet-inx.dtb \
-		          "
-            mkimage -D "-I dts -O dtb -p 2048" -i "$BOOT_DIR_ABS/$INITRD" \
-                    -f auto -A arm64 -O linux -T kernel -C $compression -a 0 \
-                    -d /boot/$kernel $dtbs \
-                    $BOOT_DIR_ABS/$KERNEL_ITB
-
-            if [[ -f /etc/kernel/cmdline ]]; then
-                read -r -d '' -a BOOT_OPTIONS < /etc/kernel/cmdline
-
-            elif [[ -f /usr/lib/kernel/cmdline ]]; then
-                read -r -d '' -a BOOT_OPTIONS < /usr/lib/kernel/cmdline
-            else
-                declare -a BOOT_OPTIONS
-                read -r -d '' BOOT_OPTIONS < /proc/cmdline
-            fi
-            echo "$BOOT_OPTIONS" > boot_params
-            vbutil_kernel --pack $BOOT_DIR_ABS/$KERNEL_VBOOT \
-                            --keyblock /usr/share/vboot/devkeys/kernel.keyblock \
-                            --signprivate /usr/share/vboot/devkeys/kernel_data_key.vbprivk \
-                            --version 1 --config boot_params \
-                            --bootloader boot_params \
-                            --vmlinuz $BOOT_DIR_ABS/$KERNEL_ITB \
-                            --arch arm
-            for i in /dev/disk/by-id/*; do
-                dev=$(cgpt find -t kernel)
-                for device in $dev; do
-                    break
-                done
-            break
-            done
-            dd if=$BOOT_DIR_ABS/$KERNEL_VBOOT of=$device bs=4M status=progress
+        # Fail early if an initrd was not created for this kernel
+        if [[ ! -f "$BOOT_DIR_ABS/$INITRD" ]]; then
+            exit 77;
         fi
+
+        kernel="${KERNEL_IMAGE##*/}-${KERNEL_VERSION}.lz4"
+        # Compression method being used by coreboot
+        compression="lz4"
+        rm -f "$BOOT_DIR_ABS/${KERNEL_IMAGE##*/}-${KERNEL_VERSION}.lz4" || true
+        lz4 "$BOOT_DIR_ABS/${KERNEL_IMAGE##*/}-${KERNEL_VERSION}" "$BOOT_DIR_ABS/${KERNEL_IMAGE##*/}-${KERNEL_VERSION}.lz4"
+
+        #Fedora kernel generates these device tree
+        #FIXME: other existing dtb in /boot/dtb/* doesn't work with the FIT image
+        dtbs="-b /boot/dtb/qcom/sc7180-trogdor-coachz-r3.dtb \
+              -b /boot/dtb/qcom/sc7180-trogdor-lazor-r3-kb.dtb \
+              -b /boot/dtb/rockchip/rk3399-gru-kevin.dtb\
+              -b /boot/dtb/rockchip/rk3399-gru-scarlet-inx.dtb"
+
+        mkimage -D "-I dts -O dtb -p 2048" -i "$BOOT_DIR_ABS/$INITRD" \
+                -f auto -A arm64 -O linux -T kernel -C $compression -a 0 \
+                -d /boot/$kernel $dtbs \
+                $BOOT_DIR_ABS/$KERNEL_ITB
+
+        if [[ -f /etc/kernel/cmdline ]]; then
+            read -r -d '' -a BOOT_OPTIONS < /etc/kernel/cmdline
+
+        elif [[ -f /usr/lib/kernel/cmdline ]]; then
+            read -r -d '' -a BOOT_OPTIONS < /usr/lib/kernel/cmdline
+        else
+            declare -a BOOT_OPTIONS
+            read -r -d '' BOOT_OPTIONS < /proc/cmdline
+        fi
+        echo "$BOOT_OPTIONS" > boot_params
+        vbutil_kernel --pack $BOOT_DIR_ABS/$KERNEL_VBOOT \
+                      --keyblock /usr/share/vboot/devkeys/kernel.keyblock \
+                      --signprivate /usr/share/vboot/devkeys/kernel_data_key.vbprivk \
+                      --version 1 --config boot_params \
+                      --bootloader boot_params \
+                      --vmlinuz $BOOT_DIR_ABS/$KERNEL_ITB \
+                      --arch arm
+        for i in /dev/disk/by-id/*; do
+            dev=$(cgpt find -t kernel)
+            for device in $dev; do
+                break
+            done
+            break
+        done
+        dd if=$BOOT_DIR_ABS/$KERNEL_VBOOT of=$device bs=4M status=progress
         ;;
     remove)
         rm -f -- "$BOOT_DIR_ABS/$INITRD" "$BOOT_DIR_ABS/$KERNEL_VBOOT" "$BOOT_DIR_ABS/$KERNEL_ITB" "boot_params"
