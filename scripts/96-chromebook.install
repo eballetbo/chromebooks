@@ -17,6 +17,7 @@ KERNEL_ITB="kernel.itb"
 # Compression method being used by coreboot
 compression="lz4"
 kernel="${KERNEL_IMAGE##*/}-${KERNEL_VERSION}"
+tmpdir="$(mktemp -d /tmp/chromebook-install.XXXX)"
 
 case "$COMMAND" in
     add)
@@ -26,8 +27,8 @@ case "$COMMAND" in
         fi
 
         cp -aT "${KERNEL_IMAGE}" "${BOOT_DIR_ABS}/${kernel}"
-        rm -f "$BOOT_DIR_ABS/${kernel}.${compression}" || true
-        "${compression}" "$BOOT_DIR_ABS/${kernel}" "$BOOT_DIR_ABS/${kernel}.${compression}" 2> /dev/null
+        cp -aT "${KERNEL_IMAGE}" "${tmpdir}/${kernel}"
+        ${compression} "${tmpdir}/${kernel}" "${tmpdir}/${kernel}.${compression}" 2> /dev/null
 
         #Fedora kernel generates these device tree
         #FIXME: other existing dtb in /boot/dtb/* doesn't work with the FIT image
@@ -36,10 +37,10 @@ case "$COMMAND" in
               -b /boot/dtb/rockchip/rk3399-gru-kevin.dtb\
               -b /boot/dtb/rockchip/rk3399-gru-scarlet-inx.dtb"
 
-        mkimage -D "-I dts -O dtb -p 2048" -i "$BOOT_DIR_ABS/$INITRD" \
-                -f auto -A arm64 -O linux -T kernel -C $compression -a 0 \
-                -d /boot/"${kernel}.${compression}" $dtbs \
-                $BOOT_DIR_ABS/$KERNEL_ITB > /dev/null
+        mkimage -D "-I dts -O dtb -p 2048" -i "${BOOT_DIR_ABS}/${INITRD}" \
+                -f auto -A arm64 -O linux -T kernel -C "${compression}" -a 0 \
+                -d "${tmpdir}/${kernel}.${compression}" ${dtbs} \
+                "${tmpdir}/${KERNEL_ITB}" > /dev/null
 
         if [[ -f /etc/kernel/cmdline ]]; then
             read -r -d '' -a BOOT_OPTIONS < /etc/kernel/cmdline
@@ -51,15 +52,16 @@ case "$COMMAND" in
             read -r -d '' BOOT_OPTIONS < /proc/cmdline
         fi
 
-        cmdline=boot_params
+        cmdline="${tmpdir}"/boot_params
 
         echo "${BOOT_OPTIONS}" > "${cmdline}"
-        vbutil_kernel --pack $BOOT_DIR_ABS/$KERNEL_VBOOT \
+
+        vbutil_kernel --pack "${tmpdir}/${KERNEL_VBOOT}" \
                       --keyblock /usr/share/vboot/devkeys/kernel.keyblock \
                       --signprivate /usr/share/vboot/devkeys/kernel_data_key.vbprivk \
                       --version 1 --config "${cmdline}" \
                       --bootloader "${cmdline}" \
-                      --vmlinuz $BOOT_DIR_ABS/$KERNEL_ITB \
+                      --vmlinuz "${tmpdir}/${KERNEL_ITB}" \
                       --arch arm > /dev/null
         for i in /dev/disk/by-id/*; do
             dev=$(cgpt find -t kernel)
@@ -68,10 +70,11 @@ case "$COMMAND" in
             done
             break
         done
-        dd if=$BOOT_DIR_ABS/$KERNEL_VBOOT of=$device bs=4M status=none
+        dd if="${tmpdir}/${KERNEL_VBOOT}" of="${dev}" bs=4M status=none
+        rm -rf "${tmpdir}"
         ;;
     remove)
-        rm -f -- "$BOOT_DIR_ABS/$INITRD" "$BOOT_DIR_ABS/$KERNEL_VBOOT" "$BOOT_DIR_ABS/$KERNEL_ITB" "boot_params"
+        rm -f "${BOOT_DIR_ABS}/${kernel}" "${BOOT_DIR_ABS}/${INITRD}"
         ;;
     *)
         exit 0
