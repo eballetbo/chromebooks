@@ -27,7 +27,8 @@ case "$COMMAND" in
         fi
 
         cp -aT "${KERNEL_IMAGE}" "${BOOT_DIR_ABS}/${kernel}"
-        cp -aT "${KERNEL_IMAGE}" "${tmpdir}/${kernel}"
+        cp -aT "${KERNEL_IMAGE}" "${tmpdir}/${kernel}.gz"
+        gunzip "${tmpdir}/${kernel}.gz"
         ${compression} "${tmpdir}/${kernel}" "${tmpdir}/${kernel}.${compression}" 2> /dev/null
 
         #Fedora kernel generates these device tree
