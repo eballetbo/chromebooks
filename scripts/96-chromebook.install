@@ -16,6 +16,7 @@ KERNEL_VBOOT="kernel.vboot"
 KERNEL_ITB="kernel.itb"
 # Compression method being used by coreboot
 compression="lz4"
+kernel="${KERNEL_IMAGE##*/}-${KERNEL_VERSION}"
 
 case "$COMMAND" in
     add)
@@ -24,9 +25,8 @@ case "$COMMAND" in
             exit 77;
         fi
 
-        kernel="${KERNEL_IMAGE##*/}-${KERNEL_VERSION}.${compression}"
-        rm -f "$BOOT_DIR_ABS/${KERNEL_IMAGE##*/}-${KERNEL_VERSION}.${compression}" || true
-        "${compression}" "$BOOT_DIR_ABS/${KERNEL_IMAGE##*/}-${KERNEL_VERSION}" "$BOOT_DIR_ABS/${KERNEL_IMAGE##*/}-${KERNEL_VERSION}.${compression}"
+        rm -f "$BOOT_DIR_ABS/${kernel}.${compression}" || true
+        "${compression}" "$BOOT_DIR_ABS/${kernel}" "$BOOT_DIR_ABS/${kernel}.${compression}"
 
         #Fedora kernel generates these device tree
         #FIXME: other existing dtb in /boot/dtb/* doesn't work with the FIT image
@@ -37,7 +37,7 @@ case "$COMMAND" in
 
         mkimage -D "-I dts -O dtb -p 2048" -i "$BOOT_DIR_ABS/$INITRD" \
                 -f auto -A arm64 -O linux -T kernel -C $compression -a 0 \
-                -d /boot/$kernel $dtbs \
+                -d /boot/"${kernel}.${compression}" $dtbs \
                 $BOOT_DIR_ABS/$KERNEL_ITB
 
         if [[ -f /etc/kernel/cmdline ]]; then
