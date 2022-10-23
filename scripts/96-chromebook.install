@@ -64,14 +64,19 @@ case "$COMMAND" in
                       --bootloader "${cmdline}" \
                       --vmlinuz "${tmpdir}/${KERNEL_ITB}" \
                       --arch arm > /dev/null
-        for i in /dev/disk/by-id/*; do
-            dev=$(cgpt find -t kernel)
-            for device in $dev; do
-                break
-            done
-            break
+
+        # Store the FIT image in a partition of type kernel, that is present in
+        # the storage device of the partition that is used to mount the rootfs.
+        major="$(mountpoint -d / | cut -d ':' -f1)"
+        sysfs="$(find /sys/dev -name ${major}:0)"
+        devnode="$(grep DEVNAME ${sysfs}/uevent | cut -d '=' -f2)"
+
+        partitions="$(cgpt find -t kernel)"
+        for part in ${partitions}; do
+            if [[ "${part##*/}" == "${devnode}"* ]]; then
+                dd if="${tmpdir}/${KERNEL_VBOOT}" of="${part}" bs=4M status=none
+            fi
         done
-        dd if="${tmpdir}/${KERNEL_VBOOT}" of="${dev}" bs=4M status=none
         rm -rf "${tmpdir}"
         ;;
     remove)
