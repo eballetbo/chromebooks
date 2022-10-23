@@ -15,19 +15,6 @@ fi
 KERNEL_VBOOT="kernel.vboot"
 KERNEL_ITB="kernel.itb"
 
-ensure_command() {
-    # ensure_command foo foo-package
-    which "$1" 2>/dev/null 1>/dev/null ||
-    sudo which "$1" 2>/dev/null 1>/dev/null || (
-        echo "Install required command $1 from package $2, e.g. sudo dnf install $2"
-        exit 1
-    )
-}
-
-ensure_command lz4 lz4
-ensure_command mkimage uboot-tools
-ensure_command vbutil_kernel vboot-utils
-
 case "$COMMAND" in
     add)
         if [[ -f "$BOOT_DIR_ABS/$INITRD" ]]; then
@@ -51,6 +38,7 @@ case "$COMMAND" in
 
             if [[ -f /etc/kernel/cmdline ]]; then
                 read -r -d '' -a BOOT_OPTIONS < /etc/kernel/cmdline
+
             elif [[ -f /usr/lib/kernel/cmdline ]]; then
                 read -r -d '' -a BOOT_OPTIONS < /usr/lib/kernel/cmdline
             else
