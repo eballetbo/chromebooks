@@ -25,6 +25,7 @@ case "$COMMAND" in
             exit 77;
         fi
 
+        cp -aT "${KERNEL_IMAGE}" "${BOOT_DIR_ABS}/${kernel}"
         rm -f "$BOOT_DIR_ABS/${kernel}.${compression}" || true
         "${compression}" "$BOOT_DIR_ABS/${kernel}" "$BOOT_DIR_ABS/${kernel}.${compression}" 2> /dev/null
 
