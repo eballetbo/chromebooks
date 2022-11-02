@@ -67,9 +67,8 @@ case "$COMMAND" in
 
         # Store the FIT image in a partition of type kernel, that is present in
         # the storage device of the partition that is used to mount the rootfs.
-        major="$(mountpoint -d / | cut -d ':' -f1)"
-        sysfs="$(find /sys/dev -name ${major}:0)"
-        devnode="$(grep DEVNAME ${sysfs}/uevent | cut -d '=' -f2)"
+        rootdev="$(df -h | grep "/$" | cut -d ' ' -f1)"
+        devnode="$(lsblk -spnlo name "${rootdev}" | tail -n1)"
 
         partitions="$(cgpt find -t kernel)"
         for part in ${partitions}; do
