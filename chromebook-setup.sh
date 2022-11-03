@@ -763,19 +763,20 @@ cmd_setup_fedora_rootfs()
 
 cmd_setup_fedora_kernel()
 {
-    local kernel_version="5.16.2-0.test.fc35.aarch64"
+    if [ -z "$IMAGE" ]; then
+        echo "Error: a Fedora image was not set."
+        exit 1
+    fi
 
-    # Download a known kernel that works for Chromebooks
-    [ -f kernel-core-$kernel_version.rpm ] || curl -OL https://download.copr.fedorainfracloud.org/results/eballetbo/fedora/fedora-35-aarch64/03507242-kernel/kernel-core-$kernel_version.rpm
-    [ -f kernel-modules-$kernel_version.rpm ] || curl -OL https://download.copr.fedorainfracloud.org/results/eballetbo/fedora/fedora-35-aarch64/03507242-kernel/kernel-modules-$kernel_version.rpm
+    rm -f vmlinuz-* initramfs-*
+
+    # Extract kernel and initramfs images
+    virt-builder --get-kernel "$IMAGE" -o .
+
+    local kernel_version="$(ls vmlinuz-* | sed -e 's/vmlinuz-//')"
 
     # Extract and copy the kernel packages to the rootfs
     mkdir ./tmpdir && cd ./tmpdir
-    rpm2cpio ../kernel-core-$kernel_version.rpm | cpio -idmv
-    rpm2cpio ../kernel-modules-$kernel_version.rpm | cpio -idmv
-
-    sudo cp -ar ./usr/* "$ROOTFS_DIR"/usr
-    sudo cp -ar ./lib/* "$ROOTFS_DIR"/lib
 
     # Generate modules.dep and map files, so modules autoload on first boot
     depmod -b "$ROOTFS_DIR" $kernel_version
@@ -905,6 +906,7 @@ ensure_command mkfs.ext4 e2fsprogs
 ensure_command mkimage u-boot-tools
 ensure_command udisksctl udisks2
 ensure_command vbutil_kernel vboot-utils
+ensure_command virt-builder guestfs-tools
 
 # Run the command if it's valid, otherwise abort
 type cmd_$cmd > /dev/null 2>&1 || print_usage_exit
