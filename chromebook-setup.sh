@@ -801,17 +801,16 @@ cmd_deploy_fedora()
         exit 1
     fi
     if [ -z "$IMAGE" ]; then
-        fedora_image=$(basename $GETFEDORA)
-        IMAGE=$(basename -s .xz $GETFEDORA)
-        if [ ! -f "$IMAGE" ]; then
-            echo "Downloading the default fedora image."
-            curl -OL $GETFEDORA
-            if [ -f "$fedora_image" ]; then
-                echo "Decompress .xz image"
-                sudo unxz "$fedora_image"
-            fi
+        fedora_image=$(curl -s -L $GETFEDORA | grep -o 'href=".*raw.xz">' | sed -e 's/href="//' -e 's/[>,", ].*//')
+        IMAGE=$(basename -s .xz $fedora_image)
+        if [ ! -f "$fedora_image" ] && [ ! -f "$IMAGE" ]; then
+            echo "Downloading image $fedora_image"
+            curl -OL $GETFEDORA/$fedora_image
         fi
-
+        if [ -f "$fedora_image" ]; then
+            echo "Decompress .xz image"
+            sudo unxz "$fedora_image"
+        fi
     fi
 
     CB_DISTRO=fedora
