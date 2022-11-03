@@ -15,7 +15,7 @@ DEBIAN_SUITE="sid"
 ROOTFS_BASE_URL="https://people.collabora.com/~eballetbo/debian/images/"
 
 # Fedora rootfs images
-GETFEDORA="https://download.fedoraproject.org/pub/fedora/linux/releases/36/Workstation/aarch64/images/"
+GETFEDORA="https://dl.fedoraproject.org/pub/fedora/linux/development/rawhide/Workstation/aarch64/images/"
 
 KERNEL_URL="git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git"
 
