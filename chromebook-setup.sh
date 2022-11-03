@@ -665,7 +665,12 @@ cmd_build_vboot()
             ;;
     esac
 
-    echo "root=PARTUUID=%U/PARTNROFF=1 rootwait rw ${extra_kparams}" > boot_params
+    # Use the partition with label ROOT-A as the rootfs partition, since
+    # that is created by the script when the block device is partitioned.
+    #
+    # Also, there is a single rootfs partition in the used layout so the
+    # rootfs partition can be a fixed one.
+    echo "root=LABEL=ROOT-A rootwait rw ${extra_kparams}" > boot_params
     sudo vbutil_kernel --pack $CB_KERNEL_PATH/kernel.vboot \
                        --keyblock /usr/share/vboot/devkeys/kernel.keyblock \
                        --signprivate /usr/share/vboot/devkeys/kernel_data_key.vbprivk \
