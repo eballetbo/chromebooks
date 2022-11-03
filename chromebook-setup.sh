@@ -807,7 +807,7 @@ cmd_deploy_fedora()
             echo "Downloading image $fedora_image"
             curl -OL $GETFEDORA/$fedora_image
         fi
-        if [ -f "$fedora_image" ]; then
+        if [ ! -f "$IMAGE" ]; then
             echo "Decompress .xz image"
             sudo unxz "$fedora_image"
         fi
