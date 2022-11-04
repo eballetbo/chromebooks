@@ -412,7 +412,7 @@ create_fit_image()
          if [ -n "$INITRD" ]; then
             initrd_option="-i $INITRD"
          fi
-         mkimage -D "-I dts -O dtb -p 2048" -f auto -A ${ARCH} -O linux -T kernel -C $compression -a 0 \
+         sudo mkimage -D "-I dts -O dtb -p 2048" -f auto -A ${ARCH} -O linux -T kernel -C $compression -a 0 \
                  -d arch/${ARCH}/boot/$kernel ${initrd_option} $dtbs \
                  kernel.itb
     else
@@ -779,7 +779,7 @@ cmd_setup_fedora_kernel()
     mkdir ./tmpdir && cd ./tmpdir
 
     # Generate modules.dep and map files, so modules autoload on first boot
-    depmod -b "$ROOTFS_DIR" $kernel_version
+    sudo depmod -b "$ROOTFS_DIR" $kernel_version
 
     # Create a directory tree similar to the kernel source tree so we can reuse some functions
     # like cmd_build_vboot and cmd_deploy_vboot
