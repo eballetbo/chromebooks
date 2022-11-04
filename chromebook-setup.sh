@@ -803,7 +803,7 @@ cmd_setup_fedora_kernel()
         phy-qcom-usb-ss ocmem dwc3 dwc3-of-simple dwc3-pci ehci-platform xhci-plat-hcd \
         i2c-qcom-geni i2c-qup icc-osm-l3 qcom-spmi-pmic phy-qcom-qmp-combo phy-qcom-qusb2 \
         phy-qcom-usb-hs qcom_aoss qcom-apcs-ipc-mailbox llcc-qcom nvmem_qfprom smem \
-        smp2p dwc3-qcom onboard_usb_hub \
+        smp2p dwc3-qcom onboard_usb_hub mmc_block sdhci_msm \
         " /boot/initramfs-$kernel_version.img --kver $kernel_version --kmoddir /lib/modules/$kernel_version
         exit
 EOF
