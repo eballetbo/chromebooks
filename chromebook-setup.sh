@@ -772,15 +772,13 @@ cmd_setup_fedora_kernel()
         exit 1
     fi
 
-    rm -f vmlinuz-* initramfs-*
-
-    # Extract kernel and initramfs images
-    virt-builder --get-kernel "$IMAGE" -o .
-
-    local kernel_version="$(ls vmlinuz-* | sed -e 's/vmlinuz-//')"
-
     # Extract and copy the kernel packages to the rootfs
     mkdir ./tmpdir && cd ./tmpdir
+
+    # Extract kernel and initramfs images
+    virt-builder --get-kernel ../"$IMAGE" -o .
+
+    local kernel_version="$(ls vmlinuz-* | sed -e 's/vmlinuz-//')"
 
     # Generate modules.dep and map files, so modules autoload on first boot
     sudo depmod -b "$ROOTFS_DIR" $kernel_version
