@@ -665,12 +665,16 @@ cmd_build_vboot()
             ;;
     esac
 
-    # Use the partition with label ROOT-A as the rootfs partition, since
-    # that is created by the script when the block device is partitioned.
-    #
-    # Also, there is a single rootfs partition in the used layout so the
-    # rootfs partition can be a fixed one.
-    echo "root=LABEL=ROOT-A rootwait rw ${extra_kparams}" > boot_params
+    # Use the root partition filesystem UUID if the partition is known,
+    # otherwise use as a fallback the ROOT-A label that is set when the
+    # root partition is formatted
+    if [ -n "$CB_SETUP_STORAGE2" ]; then
+        root_param="UUID=$(blkid ${CB_SETUP_STORAGE2} -s UUID -o value)"
+    else
+        root_param="LABEL=ROOT-A"
+    fi
+
+    echo "root=${root_param} rootwait rw ${extra_kparams}" > boot_params
     sudo vbutil_kernel --pack $CB_KERNEL_PATH/kernel.vboot \
                        --keyblock /usr/share/vboot/devkeys/kernel.keyblock \
                        --signprivate /usr/share/vboot/devkeys/kernel_data_key.vbprivk \
