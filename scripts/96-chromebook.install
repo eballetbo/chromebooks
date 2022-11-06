@@ -70,11 +70,9 @@ case "$COMMAND" in
         rootdev="$(df -h | grep "/$" | cut -d ' ' -f1)"
         devnode="$(lsblk -spnlo name "${rootdev}" | tail -n1)"
 
-        partitions="$(cgpt find -t kernel)"
+        partitions="$(cgpt find -t kernel $devnode)"
         for part in ${partitions}; do
-            if [[ "${part##*/}" == "${devnode}"* ]]; then
-                dd if="${tmpdir}/${KERNEL_VBOOT}" of="${part}" bs=4M status=none
-            fi
+            dd if="${tmpdir}/${KERNEL_VBOOT}" of="${part}" bs=4M status=none
         done
         rm -rf "${tmpdir}"
         ;;
