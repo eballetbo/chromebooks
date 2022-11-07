@@ -202,7 +202,7 @@ while true; do
             shift 2
             ;;
         --kernel)
-            CB_KERNEL_PATH="$2"
+            KERNEL="$2"
             shift 2
             ;;
         --storage)
@@ -239,8 +239,10 @@ shift
 # -----------------------------------------------------------------------------
 # Options sanitising
 
-if [ -z "$CB_KERNEL_PATH" ]; then
+if [ -z "$KERNEL" ]; then
     CB_KERNEL_PATH="kernel"
+else
+    CB_KERNEL_PATH="$KERNEL"
 fi
 
 [ -n "$CB_SETUP_STORAGE" ] || {
@@ -776,7 +778,7 @@ cmd_setup_fedora_kernel()
     mkdir ./tmpdir && cd ./tmpdir
 
     # Extract kernel and initramfs images if were not provided
-    if [ -z "$CB_KERNEL_PATH" ] && [ -z "$INITRD" ]; then
+    if [ -z "$KERNEL" ] && [ -z "$INITRD" ]; then
         virt-builder --get-kernel "$image_path" -o .
     fi
 
