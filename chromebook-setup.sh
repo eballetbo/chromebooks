@@ -405,9 +405,16 @@ create_fit_image()
          fi
 
         local initrd_option="-i arch/${ARCH}/boot/initramfs-$kernel_version.img"
+
+         # a custom kernel was specified, add an initrd only if specified as well
+         if [ -n "$CB_KERNEL_PATH" ]; then
+             initrd_option=""
+         fi
+
          if [ -n "$INITRD" ]; then
             initrd_option="-i $INITRD"
          fi
+
          sudo mkimage -D "-I dts -O dtb -p 2048" -f auto -A ${ARCH} -O linux -T kernel -C $compression -a 0 \
                  -d arch/${ARCH}/boot/$kernel ${initrd_option} $dtbs \
                  kernel.itb
@@ -772,25 +779,27 @@ cmd_setup_fedora_kernel()
         exit 1
     fi
 
+    local image_path="$(readlink -f $IMAGE)"
+
     # Extract and copy the kernel packages to the rootfs
     mkdir ./tmpdir && cd ./tmpdir
 
-    # Extract kernel and initramfs images
-    virt-builder --get-kernel ../"$IMAGE" -o .
+    # Extract kernel and initramfs images if were not provided
+    if [ -z "$CB_KERNEL_PATH" ] && [ -z "$INITRD" ]; then
+        virt-builder --get-kernel "$image_path" -o .
 
-    local kernel_version="$(ls vmlinuz-* | sed -e 's/vmlinuz-//')"
+        local kernel_version="$(ls vmlinuz-* | sed -e 's/vmlinuz-//')"
 
-    # Generate modules.dep and map files, so modules autoload on first boot
-    sudo depmod -b "$ROOTFS_DIR" $kernel_version
+        # Generate modules.dep and map files, so modules autoload on first boot
+        sudo depmod -b "$ROOTFS_DIR" $kernel_version
 
-    # Create a directory tree similar to the kernel source tree so we can reuse some functions
-    # like cmd_build_vboot and cmd_deploy_vboot
-    mkdir -p arch/arm64/boot/dts
-    cp $ROOTFS_DIR/lib/modules/$kernel_version/vmlinuz arch/arm64/boot/Image.gz
-    gunzip arch/arm64/boot/Image.gz
-    cp -fr $ROOTFS_DIR/lib/modules/$kernel_version/dtb/* arch/arm64/boot/dts/
+        # Create a directory tree similar to the kernel source tree so we can reuse some functions
+        # like cmd_build_vboot and cmd_deploy_vboot
+        mkdir -p arch/arm64/boot/dts
+        cp $ROOTFS_DIR/lib/modules/$kernel_version/vmlinuz arch/arm64/boot/Image.gz
+        gunzip arch/arm64/boot/Image.gz
+        cp -fr $ROOTFS_DIR/lib/modules/$kernel_version/dtb/* arch/arm64/boot/dts/
 
-    if [ -z "$INITRD" ]; then
         # Generate initramfs for the kernel
         # chroot into qemu-aarch-static to generate initramfs for aarch64
         sudo mount -t sysfs sysfs $ROOTFS_DIR/sys
