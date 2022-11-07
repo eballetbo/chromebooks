@@ -239,10 +239,6 @@ shift
 # -----------------------------------------------------------------------------
 # Options sanitising
 
-if [ -z "$CB_KERNEL_PATH" ]; then
-    CB_KERNEL_PATH="kernel"
-fi
-
 [ -n "$CB_SETUP_STORAGE" ] || {
     echo "Incorrect path/storage device passed to the --storage option."
     print_usage_exit
@@ -538,6 +534,10 @@ cmd_get_kernel()
 {
     local arg_url
     local tag
+
+    if [ -z "$CB_KERNEL_PATH" ]; then
+        CB_KERNEL_PATH="kernel"
+    fi
 
     echo "Creating initial git repository if not already present..."
 
