@@ -371,6 +371,7 @@ create_fit_image()
          local dtbs=""
          local kernel=""
          local compression=""
+         local initrd=""
 
          if [ "$ARCH" == "arm" ]; then
              kernel="zImage"
@@ -408,9 +409,10 @@ create_fit_image()
             fi
          fi
 
-        local initrd_option="-i arch/${ARCH}/boot/initramfs-$kernel_version.img"
          if [ -n "$INITRD" ]; then
-            initrd_option="-i $INITRD"
+             initrd="-i $INITRD"
+         elif [ -f "arch/${ARCH}/boot/initramfs-$kernel_version.img" ]; then
+             initrd="-i arch/${ARCH}/boot/initramfs-$kernel_version.img"
          fi
          sudo mkimage -D "-I dts -O dtb -p 2048" -f auto -A ${ARCH} -O linux -T kernel -C $compression -a 0 \
                  -d arch/${ARCH}/boot/$kernel ${initrd_option} $dtbs \
