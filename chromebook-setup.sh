@@ -774,11 +774,15 @@ cmd_setup_fedora_kernel()
         exit 1
     fi
 
+    local image_path="$(readlink -f $IMAGE)"
+
     # Extract and copy the kernel packages to the rootfs
     mkdir ./tmpdir && cd ./tmpdir
 
-    # Extract kernel and initramfs images
-    virt-builder --get-kernel ../"$IMAGE" -o .
+    # Extract kernel and initramfs images if were not provided
+    if [ -z "$CB_KERNEL_PATH" ] && [ -z "$INITRD" ]; then
+        virt-builder --get-kernel "$image_path" -o .
+    fi
 
     local kernel_version="$(ls vmlinuz-* | sed -e 's/vmlinuz-//')"
 
