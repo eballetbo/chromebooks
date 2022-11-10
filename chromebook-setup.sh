@@ -417,7 +417,7 @@ create_fit_image()
              initrd="-i arch/${ARCH}/boot/initramfs-$kernel_version.img"
          fi
          sudo mkimage -D "-I dts -O dtb -p 2048" -f auto -A ${ARCH} -O linux -T kernel -C $compression -a 0 \
-                 -d arch/${ARCH}/boot/$kernel ${initrd_option} $dtbs \
+                 -d arch/${ARCH}/boot/$kernel ${initrd} $dtbs \
                  kernel.itb
     else
 	echo "TODO: create x86_64 FIT image, now using a raw image"
