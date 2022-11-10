@@ -667,16 +667,12 @@ cmd_build_vboot()
             ;;
     esac
 
-    # Use the root partition filesystem UUID if the partition is known,
-    # otherwise use as a fallback the ROOT-A label that is set when the
-    # root partition is formatted
-    if [ -n "$CB_SETUP_STORAGE2" ]; then
-        root_param="UUID=$(blkid ${CB_SETUP_STORAGE2} -s UUID -o value)"
-    else
-        root_param="LABEL=ROOT-A"
-    fi
-
-    echo "root=${root_param} rootwait rw ${extra_kparams}" > boot_params
+    # When using UUIDs, PARTUUID, which is stored in the partition table IS the only way that is
+    # available at boot time. `root=LABEL=` and `root=UUID=` only works with an initramfs that
+    # fetches these identifiers. Ideally we should have here `root=PARTUUID=%U/PARTNROFF=1` where
+    # %U is passed by the bootloader, but, as dracut doesn't support the PARTNROFF we stick on the
+    # PARTUUID of the rootfs partition.
+    echo "root=PARTUUID=$(lsblk -n -o PARTUUID ${CB_SETUP_STORAGE2}) rootwait rw ${extra_kparams}" > boot_params
     sudo vbutil_kernel --pack $CB_KERNEL_PATH/kernel.vboot \
                        --keyblock /usr/share/vboot/devkeys/kernel.keyblock \
                        --signprivate /usr/share/vboot/devkeys/kernel_data_key.vbprivk \
