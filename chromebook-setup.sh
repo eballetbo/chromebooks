@@ -113,6 +113,10 @@ Available commands:
 
         $0 deploy_fedora --image=name.raw --architecture=arm64 --storage=/dev/sdX
 
+  deploy_fedora_kernel
+    Install a Fedora Linux kernel as a vboot image and its modules on the rootfs.
+    The rootfs must had been setup previously using the deploy_fedora command.
+
   setup_fedora_rootfs
     Install the fedora rootfs on the storage device specified with --storage.
     if no archive is provided the default one is used:
@@ -830,12 +834,8 @@ EOF
     fi
 }
 
-cmd_deploy_fedora()
+cmd_get_fedora_image()
 {
-    if [ ! -f "$IMAGE" ] && [ "$IMAGE" != "" ]; then
-        echo "Error: $IMAGE not found please choose an existing image."
-        exit 1
-    fi
     if [ -z "$IMAGE" ]; then
         fedora_image=$(curl -s -L $GETFEDORA | grep -o 'href=".*raw.xz">' | sed -e 's/href="//' -e 's/[>,", ].*//')
         IMAGE=$(basename -s .xz $fedora_image)
@@ -848,9 +848,33 @@ cmd_deploy_fedora()
             sudo unxz "$fedora_image"
         fi
     fi
+}
+
+cmd_deploy_fedora_kernel()
+{
+    if [ ! -f "$IMAGE" ] && [ "$IMAGE" != "" ]; then
+        echo "Error: $IMAGE not found please choose an existing image."
+        exit 1
+    fi
 
     CB_DISTRO=fedora
 
+    cmd_get_fedora_image
+    cmd_mount_rootfs
+    cmd_setup_fedora_kernel
+    cmd_eject_storage
+}
+
+cmd_deploy_fedora()
+{
+    if [ ! -f "$IMAGE" ] && [ "$IMAGE" != "" ]; then
+        echo "Error: $IMAGE not found please choose an existing image."
+        exit 1
+    fi
+
+    CB_DISTRO=fedora
+
+    cmd_get_fedora_image
     cmd_format_storage
     cmd_mount_rootfs
     cmd_setup_fedora_rootfs
