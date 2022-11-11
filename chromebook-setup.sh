@@ -745,8 +745,9 @@ cmd_setup_fedora_rootfs()
     echo "Disable SELINUX"
     sed -i 's/SELINUX=enforcing/SELINUX=permissive/' ./tmpdir/root/etc/selinux/config
 
-    echo "remove root password"
+    echo "Removing the root password"
     sed -i 's/root:!locked:/root:/' ./tmpdir/root/etc/shadow
+    sed -i 's/root:x:/root::/' ./tmpdir/root/etc/passwd
 
     echo "modifying fstab"
     sed -i '1,14s/^[^#]/# &/g' ./tmpdir/root/etc/fstab
