@@ -45,7 +45,7 @@ Environment variables:
 
 Usage:
 
-  $0 COMMAND [ARGS] OPTIONS
+  sudo $0 COMMAND [ARGS] OPTIONS
 
   Only COMMAND and ARGS are positional arguments; the OPTIONS can be
   placed anywhere and in any order.  The definition of ARGS varies
@@ -178,11 +178,11 @@ Commands useful for development workflow:
 For example, to do everything on a SD card for the ASUS Chromebook Flip
 C100PA (arm):
 
-  $0 do_everything --architecture=arm --storage=/dev/sdX
+  sudo $0 do_everything --architecture=arm --storage=/dev/sdX
 
 or to do the same to use NFS for the root filesystem:
 
-  $0 do_everything --architecture=arm --storage=/srv/nfs/nfsroot
+  sudo $0 do_everything --architecture=arm --storage=/srv/nfs/nfsroot
 
 "
 
@@ -314,7 +314,7 @@ jopt()
 ensure_command() {
     # ensure_command foo foo-package
     which "$1" 2>/dev/null 1>/dev/null ||
-    sudo which "$1" 2>/dev/null 1>/dev/null || (
+    which "$1" 2>/dev/null 1>/dev/null || (
         echo "Install required command $1 from package $2, e.g. sudo $pkg_mgr install $2"
         exit 1
     )
@@ -420,7 +420,7 @@ create_fit_image()
          elif [ -f "arch/${ARCH}/boot/initramfs-$kernel_version.img" ]; then
              initrd="-i arch/${ARCH}/boot/initramfs-$kernel_version.img"
          fi
-         sudo mkimage -D "-I dts -O dtb -p 2048" -f auto -A ${ARCH} -O linux -T kernel -C $compression -a 0 \
+         mkimage -D "-I dts -O dtb -p 2048" -f auto -A ${ARCH} -O linux -T kernel -C $compression -a 0 \
                  -d arch/${ARCH}/boot/$kernel ${initrd} $dtbs \
                  kernel.itb
     else
@@ -450,30 +450,30 @@ cmd_format_storage()
     }
 
     # Unmount any partitions automatically mounted
-    sudo umount "$CB_SETUP_STORAGE"* > /dev/null 2>&1 || true
+    umount "$CB_SETUP_STORAGE"* > /dev/null 2>&1 || true
 
     # Clear the partition table
-    sudo sgdisk -Z "$CB_SETUP_STORAGE"
+    sgdisk -Z "$CB_SETUP_STORAGE"
 
     # Create the boot partition and set it as bootable
-    sudo sgdisk -n 1:0:+64M -t 1:7f00 "$CB_SETUP_STORAGE"
+    sgdisk -n 1:0:+64M -t 1:7f00 "$CB_SETUP_STORAGE"
 
     # Set special metadata understood by the Chromebook.  These flags
     # are not standard thus do not have names.  For more details, see
     # the cgpt sources which can be found in vboot_reference chromiumos
     # repository.
-    sudo sgdisk -A 1:set:48 -A 1:set:56 "$CB_SETUP_STORAGE"
+    sgdisk -A 1:set:48 -A 1:set:56 "$CB_SETUP_STORAGE"
 
     # Create and format the root partition
-    sudo sgdisk -n 2:0:0 -t 2:7f01 "$CB_SETUP_STORAGE"
+    sgdisk -n 2:0:0 -t 2:7f01 "$CB_SETUP_STORAGE"
 
     # Tell the system to refresh what it knows about the disk partitions
-    sudo partprobe "$CB_SETUP_STORAGE"
+    partprobe "$CB_SETUP_STORAGE"
 
     wait_for_partitions_to_appear
     find_partitions_by_id
 
-    sudo mkfs.ext4 -L ROOT-A "$CB_SETUP_STORAGE2"
+    mkfs.ext4 -L ROOT-A "$CB_SETUP_STORAGE2"
 
     echo "Done."
 }
@@ -508,7 +508,7 @@ cmd_setup_rootfs()
     if test -d "$debian_url"; then
         # Copy the rootfs directory.
         echo "Copying files into the partition"
-        sudo cp -a "$debian_url"/* "$ROOTFS_DIR"
+        cp -a "$debian_url"/* "$ROOTFS_DIR"
     else
         # Download the Debian rootfs archive if it is not already there.
         if [ ! -f "$debian_archive" ]; then
@@ -518,7 +518,7 @@ cmd_setup_rootfs()
 
         # Untar the rootfs archive.
         echo "Extracting files onto the partition"
-        sudo tar xf "$debian_archive" -C "$ROOTFS_DIR"
+        tar xf "$debian_archive" -C "$ROOTFS_DIR"
     fi
 
     echo "Done."
@@ -625,7 +625,7 @@ cmd_deploy_kernel_modules()
     cd ${CB_KERNEL_PATH}
 
     # Install the kernel modules on the rootfs
-    sudo make modules_install INSTALL_MOD_PATH=$ROOTFS_DIR
+    make modules_install INSTALL_MOD_PATH=$ROOTFS_DIR
 
     cd - > /dev/null
 
@@ -679,7 +679,7 @@ cmd_build_vboot()
     # %U is passed by the bootloader, but, as dracut doesn't support the PARTNROFF we stick on the
     # PARTUUID of the rootfs partition.
     echo "root=PARTUUID=$(lsblk -n -o PARTUUID ${CB_SETUP_STORAGE2}) rootwait rw ${extra_kparams}" > boot_params
-    sudo vbutil_kernel --pack $CB_KERNEL_PATH/kernel.vboot \
+    vbutil_kernel --pack $CB_KERNEL_PATH/kernel.vboot \
                        --keyblock /usr/share/vboot/devkeys/kernel.keyblock \
                        --signprivate /usr/share/vboot/devkeys/kernel_data_key.vbprivk \
                        --version 1 --config boot_params \
@@ -701,10 +701,10 @@ cmd_deploy_vboot()
 
         # Install it on the boot partition
         boot="$CB_SETUP_STORAGE1"
-        sudo dd if=$CB_KERNEL_PATH/kernel.vboot of="$boot" bs=4M
+        dd if=$CB_KERNEL_PATH/kernel.vboot of="$boot" bs=4M
     else
         if [ "$ARCH" != "x86_64" ]; then
-            sudo cp -av $CB_KERNEL_PATH/kernel.itb "$ROOTFS_DIR/boot"
+            cp -av $CB_KERNEL_PATH/kernel.itb "$ROOTFS_DIR/boot"
 	    else
             echo "WARNING: Not implemented for x86_64."
 	    fi
@@ -735,36 +735,36 @@ cmd_setup_fedora_rootfs()
     local btrfs
 
     image=$(basename $IMAGE)
-    loopdev="$(sudo losetup --show -fP $IMAGE)"
+    loopdev="$(losetup --show -fP $IMAGE)"
     btrfs="${image/raw/btrfs}"
-    sudo dd if="${loopdev}p3" of="/var/tmp/$btrfs" conv=fsync status=progress
-    sudo losetup -D
+    dd if="${loopdev}p3" of="/var/tmp/$btrfs" conv=fsync status=progress
+    losetup -D
     mkdir ./tmpdir
-    sudo mount "/var/tmp/$btrfs" ./tmpdir
+    mount "/var/tmp/$btrfs" ./tmpdir
     sleep 3
     echo "Disable SELINUX"
-    sudo sed -i 's/SELINUX=enforcing/SELINUX=permissive/' ./tmpdir/root/etc/selinux/config
+    sed -i 's/SELINUX=enforcing/SELINUX=permissive/' ./tmpdir/root/etc/selinux/config
 
     echo "remove root password"
-    sudo sed -i 's/root:!locked:/root:/' ./tmpdir/root/etc/shadow
+    sed -i 's/root:!locked:/root:/' ./tmpdir/root/etc/shadow
 
     echo "modifying fstab"
-    sudo sed -i '1,14s/^[^#]/# &/g' ./tmpdir/root/etc/fstab
-    sudo sed -i \
+    sed -i '1,14s/^[^#]/# &/g' ./tmpdir/root/etc/fstab
+    sed -i \
     -e '/home/s/home//' \
     -e '/home/s/btrfs/ext4/' \
     -e 's/subvol=home,compress=zstd:1/defaults/' ./tmpdir/root/etc/fstab
 
     # Insert the Kernel update script
     echo "Inserting Kernel Update script"
-    sudo chmod 777 scripts/96-chromebook.install
-    sudo cp scripts/96-chromebook.install ./tmpdir/root/usr/lib/kernel/install.d/
+    chmod 777 scripts/96-chromebook.install
+    cp scripts/96-chromebook.install ./tmpdir/root/usr/lib/kernel/install.d/
 
     # Copy the ROOTFS to media
     echo "copying ROOTFS to partition"
-    sudo cp -ar "./tmpdir/root/"* "$ROOTFS_DIR"
-    sudo umount ./tmpdir
-    sudo rm -rf ./tmpdir
+    cp -ar "./tmpdir/root/"* "$ROOTFS_DIR"
+    umount ./tmpdir
+    rm -rf ./tmpdir
 
     echo "Done."
 }
@@ -789,7 +789,7 @@ cmd_setup_fedora_kernel()
     local kernel_version="$(ls vmlinuz-* | sed -e 's/vmlinuz-//')"
 
     # Generate modules.dep and map files, so modules autoload on first boot
-    sudo depmod -b "$ROOTFS_DIR" $kernel_version
+    depmod -b "$ROOTFS_DIR" $kernel_version
 
     # Create a directory tree similar to the kernel source tree so we can reuse some functions
     # like cmd_build_vboot and cmd_deploy_vboot
@@ -801,12 +801,12 @@ cmd_setup_fedora_kernel()
     if [ -z "$INITRD" ]; then
         # Generate initramfs for the kernel
         # chroot into qemu-aarch-static to generate initramfs for aarch64
-        sudo mount -t sysfs sysfs $ROOTFS_DIR/sys
-        sudo mount -t proc proc $ROOTFS_DIR/proc
-        sudo mount -t tmpfs tmpfs $ROOTFS_DIR/tmp
-        sudo mount -t devtmpfs devtmpfs $ROOTFS_DIR/dev
-        sudo cp $(which qemu-aarch64-static) $ROOTFS_DIR/usr/bin
-        cat << EOF | sudo chroot /var$ROOTFS_DIR qemu-aarch64-static /bin/bash
+        mount -t sysfs sysfs $ROOTFS_DIR/sys
+        mount -t proc proc $ROOTFS_DIR/proc
+        mount -t tmpfs tmpfs $ROOTFS_DIR/tmp
+        mount -t devtmpfs devtmpfs $ROOTFS_DIR/dev
+        cp $(which qemu-aarch64-static) $ROOTFS_DIR/usr/bin
+        cat << EOF | chroot /var$ROOTFS_DIR qemu-aarch64-static /bin/bash
         dracut --force -v --add-drivers "ulpi usb-storage phy-qcom-usb-hs-28nm \
         phy-qcom-usb-ss ocmem dwc3 dwc3-of-simple dwc3-pci ehci-platform xhci-plat-hcd \
         i2c-qcom-geni i2c-qup icc-osm-l3 qcom-spmi-pmic phy-qcom-qmp-combo phy-qcom-qusb2 \
@@ -815,7 +815,7 @@ cmd_setup_fedora_kernel()
         " /boot/initramfs-$kernel_version.img --kver $kernel_version --kmoddir /lib/modules/$kernel_version
         exit
 EOF
-        sudo cp $ROOTFS_DIR/boot/initramfs-$kernel_version.img arch/arm64/boot/
+        cp $ROOTFS_DIR/boot/initramfs-$kernel_version.img arch/arm64/boot/
     fi
     create_fit_image
 
@@ -825,12 +825,12 @@ EOF
     cmd_build_vboot
     cmd_deploy_vboot
 
-    sudo rm -rf ./tmpdir
+    rm -rf ./tmpdir
     if [ -z "$INITRD" ]; then
-        sudo umount tmpfs
-        sudo umount devtmpfs
-        sudo umount proc
-        sudo umount sysfs
+        umount tmpfs
+        umount devtmpfs
+        umount proc
+        umount sysfs
     fi
 }
 
@@ -845,7 +845,7 @@ cmd_get_fedora_image()
         fi
         if [ ! -f "$IMAGE" ]; then
             echo "Decompress .xz image"
-            sudo unxz "$fedora_image"
+            unxz "$fedora_image"
         fi
     fi
 }
@@ -918,6 +918,12 @@ cmd_deploy_kernel_only()
     cmd_deploy_vboot
     cmd_eject_storage
 }
+
+# Ensure sudo user
+if [ "$(whoami)" != "root" ]; then
+        echo "Error: This script requires 'sudo' privileges in order to write to disk & mount media."
+        exit 1
+fi
 
 if grep -qi fedora /etc/os-release; then
   pkg_mgr="dnf"
