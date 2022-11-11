@@ -178,11 +178,11 @@ Commands useful for development workflow:
 For example, to do everything on a SD card for the ASUS Chromebook Flip
 C100PA (arm):
 
-  sudo $0 do_everything --architecture=arm --storage=/dev/sdX
+  sudo $0 do_everything --architecture=aarch64 --storage=/dev/sdX
 
 or to do the same to use NFS for the root filesystem:
 
-  sudo $0 do_everything --architecture=arm --storage=/srv/nfs/nfsroot
+  sudo $0 do_everything --architecture=aarch64 --storage=/srv/nfs/nfsroot
 
 "
 
@@ -273,7 +273,8 @@ fi
 
 case "$ARCH" in
     arm)
-        ARCH="arm"
+        echo "Error: ARMv7 or armhfp architecture is not supported."
+        exit 1
         ;;
     arm64|aarch64)
         ARCH="arm64"
@@ -289,16 +290,12 @@ esac
 
 if [ "$ARCH" == "x86_64" ]; then
     DEBIAN_ROOTFS_URL="$ROOTFS_BASE_URL/debian-gnome-desktop-$DEBIAN_SUITE-amd64.tar.gz"
-elif [ "$ARCH" == "arm64" ]; then
+else
     DEBIAN_ROOTFS_URL="$ROOTFS_BASE_URL/debian-gnome-desktop-$DEBIAN_SUITE-$ARCH.tar.gz"
     TOOLCHAIN="$ARM64_TOOLCHAIN"
     TOOLCHAIN_URL="$ARM64_TOOLCHAIN_URL"
     [ -z "$CROSS_COMPILE" ] && export CROSS_COMPILE=\
 $PWD/$TOOLCHAIN/bin/aarch64-none-linux-gnu-
-else
-    DEBIAN_ROOTFS_URL="$ROOTFS_BASE_URL/debian-gnome-desktop-$DEBIAN_SUITE-armhf.tar.gz"
-    [ -z "$CROSS_COMPILE" ] && export CROSS_COMPILE=\
-$PWD/$TOOLCHAIN/bin/arm-none-linux-gnueabihf-
 fi
 
 export ARCH
@@ -379,40 +376,31 @@ create_fit_image()
          local compression=""
          local initrd=""
 
-         if [ "$ARCH" == "arm" ]; then
-             kernel="zImage"
-             compression="none"
-             dtbs=" \
-                   -b arch/arm/boot/dts/exynos5250-snow.dtb \
-                   -b arch/arm/boot/dts/rk3288-veyron-minnie.dtb \
-                   -b arch/arm/boot/dts/rk3288-veyron-jerry.dtb"
+         kernel="Image.lz4"
+         compression="lz4"
+
+         # Compress image
+         rm -f arch/${ARCH}/boot/Image.lz4 || true
+         lz4 arch/${ARCH}/boot/Image arch/${ARCH}/boot/Image.lz4
+
+         #fedora kernel does not generate these device-tree
+         if [ "$CB_DISTRO" == "fedora" ]; then
+            dtbs=" \
+                -b arch/arm64/boot/dts/qcom/sc7180-trogdor-coachz-r3.dtb \
+                -b arch/arm64/boot/dts/qcom/sc7180-trogdor-lazor-r3-kb.dtb \
+                -b arch/arm64/boot/dts/rockchip/rk3399-gru-kevin.dtb\
+                -b arch/arm64/boot/dts/rockchip/rk3399-gru-scarlet-inx.dtb \
+                "
          else
-             kernel="Image.lz4"
-             compression="lz4"
-
-             # Compress image
-             rm -f arch/${ARCH}/boot/Image.lz4 || true
-             lz4 arch/${ARCH}/boot/Image arch/${ARCH}/boot/Image.lz4
-
-             #fedora kernel does not generate these device-tree
-            if [ "$CB_DISTRO" == "fedora" ]; then
-                dtbs=" \
-                    -b arch/arm64/boot/dts/qcom/sc7180-trogdor-coachz-r3.dtb \
-                    -b arch/arm64/boot/dts/qcom/sc7180-trogdor-lazor-r3-kb.dtb \
-                    -b arch/arm64/boot/dts/rockchip/rk3399-gru-kevin.dtb\
-                    -b arch/arm64/boot/dts/rockchip/rk3399-gru-scarlet-inx.dtb \
-                    "
-            else
-                dtbs=" \
-                    -b arch/arm64/boot/dts/qcom/sc7180-trogdor-coachz-r3.dtb \
-                    -b arch/arm64/boot/dts/qcom/sc7180-trogdor-lazor-r3-kb.dtb \
-                    -b arch/arm64/boot/dts/mediatek/mt8173-elm.dtb \
-                    -b arch/arm64/boot/dts/mediatek/mt8173-elm-hana.dtb \
-                    -b arch/arm64/boot/dts/mediatek/mt8183-kukui-krane-sku176.dtb \
-                    -b arch/arm64/boot/dts/rockchip/rk3399-gru-kevin.dtb\
-                    -b arch/arm64/boot/dts/rockchip/rk3399-gru-scarlet-inx.dtb \
-                    "
-            fi
+            dtbs=" \
+                -b arch/arm64/boot/dts/qcom/sc7180-trogdor-coachz-r3.dtb \
+                -b arch/arm64/boot/dts/qcom/sc7180-trogdor-lazor-r3-kb.dtb \
+                -b arch/arm64/boot/dts/mediatek/mt8173-elm.dtb \
+                -b arch/arm64/boot/dts/mediatek/mt8173-elm-hana.dtb \
+                -b arch/arm64/boot/dts/mediatek/mt8183-kukui-krane-sku176.dtb \
+                -b arch/arm64/boot/dts/rockchip/rk3399-gru-kevin.dtb\
+                -b arch/arm64/boot/dts/rockchip/rk3399-gru-scarlet-inx.dtb \
+                "
          fi
 
          if [ -n "$INITRD" ]; then
@@ -582,10 +570,7 @@ cmd_config_kernel()
     fi
 
     # Create .config
-    if [ "$ARCH" == "arm" ]; then
-        scripts/kconfig/merge_config.sh -m arch/arm/configs/multi_v7_defconfig $DISTRO_CFG $CWD/fragments/multi-v7/chromebooks.cfg
-        make olddefconfig
-    elif [ "$ARCH" == "arm64" ]; then
+    if [ "$ARCH" == "arm64" ]; then
         scripts/kconfig/merge_config.sh -m arch/arm64/configs/defconfig $DISTRO_CFG $CWD/fragments/arm64/chromebooks.cfg $CWD/fragments/arm64/mediatek.cfg $CWD/fragments/arm64/qualcomm.cfg
         make olddefconfig
     else
@@ -605,11 +590,7 @@ cmd_build_kernel()
     cd ${CB_KERNEL_PATH}
 
     # Build kernel + modules + device tree blob
-    if [ "$ARCH" == "arm" ]; then
-        make W=1 zImage modules dtbs $(jopt)
-    else
-	    make W=1 $(jopt)
-    fi
+	make W=1 $(jopt)
 
     create_fit_image
 
@@ -655,7 +636,7 @@ cmd_build_vboot()
     echo "Sign the kernels to boot with Chrome OS devices..."
 
     case "$ARCH" in
-        arm|arm64)
+        arm64)
             arch="arm"
             bootloader="boot_params"
             vmlinuz="$CB_KERNEL_PATH/kernel.itb"
