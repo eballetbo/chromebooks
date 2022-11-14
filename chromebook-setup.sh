@@ -819,7 +819,7 @@ EOF
 cmd_get_fedora_image()
 {
     if [ -z "$IMAGE" ]; then
-        fedora_image=$(curl -s -L $GETFEDORA | grep -o 'href=".*raw.xz">' | sed -e 's/href="//' -e 's/[>,", ].*//')
+        fedora_image=$(curl -s -L $GETFEDORA | sed "s/>/>\n/g" | grep -o 'href=".*raw.xz">' | sed -e 's/href="//' -e 's/[>,", ].*//')
         IMAGE=$(basename -s .xz $fedora_image)
         if [ ! -f "$fedora_image" ] && [ ! -f "$IMAGE" ]; then
             echo "Downloading image $fedora_image"
