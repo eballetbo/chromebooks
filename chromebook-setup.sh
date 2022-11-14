@@ -720,7 +720,7 @@ cmd_setup_fedora_rootfs()
     btrfs="${image/raw/btrfs}"
     dd if="${loopdev}p3" of="/var/tmp/$btrfs" conv=fsync status=progress
     losetup -D
-    mkdir ./tmpdir
+    rm -rf ./tmpdir && mkdir ./tmpdir
     mount "/var/tmp/$btrfs" ./tmpdir
     sleep 3
     echo "Disable SELINUX"
