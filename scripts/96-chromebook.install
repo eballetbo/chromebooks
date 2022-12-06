@@ -44,13 +44,11 @@ case "$COMMAND" in
                 "${tmpdir}/${KERNEL_ITB}" > /dev/null
 
         if [[ -f /etc/kernel/cmdline ]]; then
-            read -r -d '' -a BOOT_OPTIONS < /etc/kernel/cmdline
-
+            BOOT_OPTIONS="$(tr -s "$IFS" ' ' </etc/kernel/cmdline)"
         elif [[ -f /usr/lib/kernel/cmdline ]]; then
-            read -r -d '' -a BOOT_OPTIONS < /usr/lib/kernel/cmdline
+            BOOT_OPTIONS="$(tr -s "$IFS" ' ' </usr/lib/kernel/cmdline)"
         else
-            declare -a BOOT_OPTIONS
-            read -r -d '' BOOT_OPTIONS < /proc/cmdline
+            BOOT_OPTIONS="$(tr -s "$IFS" '\n' </proc/cmdline)"
         fi
 
         cmdline="${tmpdir}"/boot_params
