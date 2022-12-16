@@ -40,8 +40,7 @@ Environment variables:
 
     Standard variable to use a cross-compiler toolchain.  If it is not
     already defined before calling this script, it will be set by
-    default in this script to match the toolchain downloaded using the
-    get_toolchain command.
+    default in this script to match aarch64-linux-gnu-.
 
 Usage:
 
@@ -126,15 +125,6 @@ Available commands:
     Download and extract a known kernel that works for chromebooks
     this also copies the kernel packages to the fedora rootfs and generate
     modules.dep and map files, to enable modules autoload on first boot.
-
-  get_toolchain
-    Download and extract the cross-compiler toolchain needed to build
-    the Linux kernel.  It is fixed to this version:
-        $TOOLCHAIN_URL
-
-    In order to use an alternative toolchain, the CROSS_COMPILE
-    environment variable can be set before calling this script to
-    point at the toolchain of your choice.
 
   get_kernel [URL]
     Get the latest kernel source code. The optional URL argument is to
@@ -292,10 +282,7 @@ if [ "$ARCH" == "x86_64" ]; then
     DEBIAN_ROOTFS_URL="$ROOTFS_BASE_URL/debian-gnome-desktop-$DEBIAN_SUITE-amd64.tar.gz"
 else
     DEBIAN_ROOTFS_URL="$ROOTFS_BASE_URL/debian-gnome-desktop-$DEBIAN_SUITE-$ARCH.tar.gz"
-    TOOLCHAIN="$ARM64_TOOLCHAIN"
-    TOOLCHAIN_URL="$ARM64_TOOLCHAIN_URL"
-    [ -z "$CROSS_COMPILE" ] && export CROSS_COMPILE=\
-$PWD/$TOOLCHAIN/bin/aarch64-none-linux-gnu-
+    [ -z "$CROSS_COMPILE" ] && export CROSS_COMPILE=aarch64-linux-gnu-
 fi
 
 export ARCH
@@ -509,24 +496,6 @@ cmd_setup_rootfs()
         echo "Extracting files onto the partition"
         tar xf "$debian_archive" -C "$ROOTFS_DIR"
     fi
-
-    echo "Done."
-}
-
-cmd_get_toolchain()
-{
-    if [ "$ARCH" == "x86_64" ]; then
-        echo "Using default distro toolchain"
-        return 0
-    fi
-
-    [ -d "$TOOLCHAIN" ] && {
-        echo "Toolchain already downloaded: $TOOLCHAIN"
-        return 0
-    }
-
-    echo "Downloading and extracting toolchain: $url"
-    curl -L "$TOOLCHAIN_URL" | tar xJf -
 
     echo "Done."
 }
@@ -870,7 +839,6 @@ cmd_do_everything()
     cmd_format_storage
     cmd_mount_rootfs
     cmd_setup_rootfs
-    cmd_get_toolchain
     cmd_get_kernel
     cmd_config_kernel
     cmd_build_kernel
