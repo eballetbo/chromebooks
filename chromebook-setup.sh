@@ -779,7 +779,7 @@ cmd_setup_fedora_kernel()
     image_path="$(readlink -f $IMAGE)"
 
     # Extract and copy the kernel packages to the rootfs
-    create_tmpdir && cd ./tmpdir
+    create_tmpdir && pushd ./tmpdir
 
     # Extract kernel and initramfs images if were not provided
     if [ -z "$KERNEL" ] && [ -z "$INITRD" ]; then
@@ -791,6 +791,16 @@ cmd_setup_fedora_kernel()
     fi
 
     kernel_version="$(ls vmlinuz-* | sed -e 's/vmlinuz-//')"
+
+    popd && rm -rf ./tmpdir
+
+    if [ ! -d "$ROOTFS_DIR/lib/modules/$kernel_version" ]; then
+	cmd_mount_fedora_rootfs
+	cp -a ./tmpdir/root/lib/modules/$kernel_version "$ROOTFS_DIR/lib/modules/"
+	cmd_umount_fedora_rootfs
+    fi
+
+    create_tmpdir && pushd ./tmpdir
 
     # Generate modules.dep and map files, so modules autoload on first boot
     if [ -z "$ROOTFS_DIR" ]; then
@@ -843,7 +853,7 @@ EOF
     fi
     create_fit_image
 
-    cd - > /dev/null
+    popd
 
     export CB_KERNEL_PATH=./tmpdir
     cmd_build_vboot
