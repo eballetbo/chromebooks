@@ -436,6 +436,11 @@ create_fit_image()
     fi
 }
 
+create_tmpdir()
+{
+    rm -rf ./tmpdir && mkdir ./tmpdir
+}
+
 # -----------------------------------------------------------------------------
 # Functions to run each command
 
@@ -705,7 +710,7 @@ cmd_setup_fedora_rootfs()
     dd if="${loopdev}p3" of="/var/tmp/$btrfs" conv=fsync status=progress
     losetup -d "$loopdev"
     umount ./tmpdir || true
-    rm -rf ./tmpdir && mkdir ./tmpdir
+    create_tmpdir
     mount "/var/tmp/$btrfs" ./tmpdir
     sleep 3
     echo "Disable SELINUX"
@@ -767,7 +772,7 @@ cmd_setup_fedora_kernel()
     image_path="$(readlink -f $IMAGE)"
 
     # Extract and copy the kernel packages to the rootfs
-    mkdir ./tmpdir && cd ./tmpdir
+    create_tmpdir && cd ./tmpdir
 
     # Extract kernel and initramfs images if were not provided
     if [ -z "$KERNEL" ] && [ -z "$INITRD" ]; then
