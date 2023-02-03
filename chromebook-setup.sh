@@ -696,9 +696,7 @@ cmd_eject_storage()
     echo "All done."
 }
 
-# -----------------------------------------------------------------------------
-# Experimental: Create Fedora images for Chromebooks
-cmd_setup_fedora_rootfs()
+cmd_mount_fedora_rootfs()
 {
     local loopdev
     local image
@@ -709,10 +707,21 @@ cmd_setup_fedora_rootfs()
     btrfs="${image/raw/btrfs}"
     dd if="${loopdev}p3" of="/var/tmp/$btrfs" conv=fsync status=progress
     losetup -d "$loopdev"
-    umount ./tmpdir || true
     create_tmpdir
     mount "/var/tmp/$btrfs" ./tmpdir
     sleep 3
+}
+
+cmd_umount_fedora_rootfs()
+{
+    umount ./tmpdir
+    rm -rf ./tmpdir
+}
+
+# -----------------------------------------------------------------------------
+# Experimental: Create Fedora images for Chromebooks
+cmd_setup_fedora_rootfs()
+{
     echo "Disable SELINUX"
     sed -i 's/SELINUX=enforcing/SELINUX=permissive/' ./tmpdir/root/etc/selinux/config
 
@@ -735,8 +744,6 @@ cmd_setup_fedora_rootfs()
     # Copy the ROOTFS to media
     echo "copying ROOTFS to partition"
     cp -ar "./tmpdir/root/"* "$ROOTFS_DIR"
-    umount ./tmpdir
-    rm -rf ./tmpdir
 
     echo "Done."
 }
@@ -894,7 +901,9 @@ cmd_deploy_fedora()
     cmd_get_fedora_image
     cmd_format_storage
     cmd_mount_rootfs
+    cmd_mount_fedora_rootfs
     cmd_setup_fedora_rootfs
+    cmd_umount_fedora_rootfs
     cmd_setup_fedora_kernel
     cmd_eject_storage
 }
