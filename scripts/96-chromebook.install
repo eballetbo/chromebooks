@@ -43,9 +43,11 @@ case "$COMMAND" in
                 -d "${tmpdir}/${kernel}.${compression}" ${dtbs} \
                 "${tmpdir}/${KERNEL_ITB}" > /dev/null
 
-        if [[ -f /etc/kernel/cmdline ]]; then
-            BOOT_OPTIONS="$(tr -s "$IFS" ' ' </etc/kernel/cmdline)"
-        elif [[ -f /usr/lib/kernel/cmdline ]]; then
+        #FIXME: do not take into account cmdline from /etc/kernel, the file installed by
+        # the image doesn't match with what we want.
+        #if [[ -f /etc/kernel/cmdline ]]; then
+        #    BOOT_OPTIONS="$(tr -s "$IFS" ' ' </etc/kernel/cmdline)"
+        if [[ -f /usr/lib/kernel/cmdline ]]; then
             BOOT_OPTIONS="$(tr -s "$IFS" ' ' </usr/lib/kernel/cmdline)"
         else
             BOOT_OPTIONS="$(tr -s "$IFS" '\n' </proc/cmdline)"
