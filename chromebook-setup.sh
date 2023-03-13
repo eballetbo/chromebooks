@@ -83,6 +83,14 @@ Options:
   --initrd=INITRD
     Initrd to be added to the FIT image.
 
+  --enable-copr=COPR
+    When this is enabled, instead of install the kernel from the image, it
+    downloads and installs the kernel from the copr repository provided.
+
+  --pkgversion=PKGVERSION
+    This variable sets the fedora package version. It is used to download a
+    specific version of the fedora kernel package.
+
 Available commands:
 
   help
@@ -179,7 +187,7 @@ or to do the same to use NFS for the root filesystem:
     exit $arg_ret
 }
 
-opts=$(getopt -o "h,s:" -l "help,image:,distro:,kernel:,storage:,architecture:,kparams:,initrd:" -- "$@")
+opts=$(getopt -o "h,s:" -l "help,image:,distro:,kernel:,storage:,architecture:,kparams:,initrd:,enable-copr:,pkgversion:" -- "$@")
 eval set -- "$opts"
 
 while true; do
@@ -213,6 +221,14 @@ while true; do
             ;;
         --initrd)
             INITRD="$2"
+            shift 2
+            ;;
+        --enable-copr)
+            COPR="$2"
+            shift 2
+            ;;
+        --pkgversion)
+            PKGVERSION="$2"
             shift 2
             ;;
         --)
@@ -721,6 +737,22 @@ cmd_setup_fedora_rootfs()
     echo "Done."
 }
 
+cmd_setup_copr_fedora_kernel()
+{
+    # Download a known kernel that works for Chromebooks
+    [ -f kernel-core-${PKGVERSION}.rpm ] || curl -OL ${COPR}/kernel-core-${PKGVERSION}.rpm
+    [ -f kernel-modules-${PKGVERSION}.rpm ] || curl -OL ${COPR}/kernel-modules-${PKGVERSION}.rpm
+    [ -f kernel-modules-core-${PKGVERSION}.rpm ] || curl -OL ${COPR}/kernel-modules-core-${PKGVERSION}.rpm
+
+    rpm2cpio kernel-core-${PKGVERSION}.rpm | cpio -idmv
+    rpm2cpio kernel-modules-${PKGVERSION}.rpm | cpio -idmv
+    rpm2cpio kernel-modules-core-${PKGVERSION}.rpm | cpio -idmv
+
+    sudo cp -a ./lib/modules//${PKGVERSION}/vmlinuz vmlinuz-${PKGVERSION}
+    sudo cp -ar ./usr/* "$ROOTFS_DIR"/usr
+    sudo cp -ar ./lib/* "$ROOTFS_DIR"/lib
+}
+
 cmd_setup_fedora_kernel()
 {
     if [ -z "$IMAGE" ]; then
@@ -735,7 +767,11 @@ cmd_setup_fedora_kernel()
 
     # Extract kernel and initramfs images if were not provided
     if [ -z "$KERNEL" ] && [ -z "$INITRD" ]; then
-        virt-builder --get-kernel "$image_path" -o .
+        if [ -z "$COPR" ]; then
+            virt-builder --get-kernel "$image_path" -o .
+        else
+             cmd_setup_copr_fedora_kernel
+        fi
     fi
 
     local kernel_version="$(ls vmlinuz-* | sed -e 's/vmlinuz-//')"
