@@ -761,31 +761,31 @@ cmd_setup_fedora_kernel()
     kernel_version="$(ls vmlinuz-* | sed -e 's/vmlinuz-//')"
 
     # Generate modules.dep and map files, so modules autoload on first boot
-    depmod -b "$ROOTFS_DIR" $kernel_version
+    depmod -b "$ROOTFS_DIR" "$kernel_version"
 
     # Create a directory tree similar to the kernel source tree so we can reuse some functions
     # like cmd_build_vboot and cmd_deploy_vboot
     mkdir -p arch/arm64/boot/dts
 
-    if vmlinuz_is_an_efi_application $ROOTFS_DIR/lib/modules/$kernel_version/vmlinuz; then
+    if vmlinuz_is_an_efi_application "$ROOTFS_DIR/lib/modules/$kernel_version/vmlinuz"; then
         ensure_command unzboot unzboot
-        unzboot $ROOTFS_DIR/lib/modules/$kernel_version/vmlinuz arch/arm64/boot/Image
+        unzboot "$ROOTFS_DIR/lib/modules/$kernel_version/vmlinuz" arch/arm64/boot/Image
     else
-        cp $ROOTFS_DIR/lib/modules/$kernel_version/vmlinuz arch/arm64/boot/Image.gz
+        cp "$ROOTFS_DIR/lib/modules/$kernel_version/vmlinuz" arch/arm64/boot/Image.gz
         gunzip arch/arm64/boot/Image.gz
     fi;
 
-    cp -fr $ROOTFS_DIR/lib/modules/$kernel_version/dtb/* arch/arm64/boot/dts/
+    cp -fr "$ROOTFS_DIR/lib/modules/$kernel_version/dtb"/* arch/arm64/boot/dts/
 
     if [ -z "$INITRD" ]; then
         # Generate initramfs for the kernel
         # chroot into qemu-aarch-static to generate initramfs for aarch64
-        mount -t sysfs sysfs $ROOTFS_DIR/sys
-        mount -t proc proc $ROOTFS_DIR/proc
-        mount -t tmpfs tmpfs $ROOTFS_DIR/tmp
-        mount -t devtmpfs devtmpfs $ROOTFS_DIR/dev
-        cp $(which qemu-aarch64-static) $ROOTFS_DIR/usr/bin
-        cat << EOF | chroot /var$ROOTFS_DIR qemu-aarch64-static /bin/bash
+        mount -t sysfs sysfs "$ROOTFS_DIR/sys"
+        mount -t proc proc "$ROOTFS_DIR/proc"
+        mount -t tmpfs tmpfs "$ROOTFS_DIR/tmp"
+        mount -t devtmpfs devtmpfs "$ROOTFS_DIR/dev"
+        cp "$(which qemu-aarch64-static)" "$ROOTFS_DIR/usr/bin"
+        cat << EOF | chroot "/var$ROOTFS_DIR" qemu-aarch64-static /bin/bash
         dracut --force -v --add-drivers "ulpi usb-storage phy-qcom-usb-hs-28nm \
         phy-qcom-usb-ss ocmem dwc3 dwc3-of-simple dwc3-pci ehci-platform xhci-plat-hcd \
         i2c-qcom-geni i2c-qup icc-osm-l3 qcom-spmi-pmic phy-qcom-qmp-combo phy-qcom-qusb2 \
@@ -794,7 +794,7 @@ cmd_setup_fedora_kernel()
         " /boot/initramfs-$kernel_version.img --kver $kernel_version --kmoddir /lib/modules/$kernel_version
         exit
 EOF
-        cp $ROOTFS_DIR/boot/initramfs-$kernel_version.img arch/arm64/boot/
+        cp "$ROOTFS_DIR/boot/initramfs-$kernel_version.img" arch/arm64/boot/
     fi
     create_fit_image
 
