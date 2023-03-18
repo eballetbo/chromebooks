@@ -16,7 +16,13 @@ set -e
 # Turn on traces, useful while debugging but commented out by default
 #set -x
 
-source chromebook-config.sh
+# Fedora rootfs images
+GETFEDORA="https://dl.fedoraproject.org/pub/fedora/linux/development/rawhide/Workstation/aarch64/images/"
+
+KERNEL_URL="git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git"
+
+# Current Working Directory
+CWD=$PWD
 
 print_usage_exit()
 {
