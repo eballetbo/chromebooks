@@ -308,7 +308,7 @@ export ARCH
 
 jopt()
 {
-    echo "-j"$(grep -c processor /proc/cpuinfo)
+    echo "-j$(grep -c processor /proc/cpuinfo)"
 }
 
 ensure_command() {
