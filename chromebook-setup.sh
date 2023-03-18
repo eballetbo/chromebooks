@@ -320,6 +320,10 @@ ensure_command() {
     )
 }
 
+vmlinuz_is_an_efi_application() {
+    file ${1} | grep -qi "PE32+ executable (EFI application)"
+}
+
 find_partitions_by_id()
 {
     unset CB_SETUP_STORAGE1 CB_SETUP_STORAGE2
@@ -782,8 +786,15 @@ cmd_setup_fedora_kernel()
     # Create a directory tree similar to the kernel source tree so we can reuse some functions
     # like cmd_build_vboot and cmd_deploy_vboot
     mkdir -p arch/arm64/boot/dts
-    cp $ROOTFS_DIR/lib/modules/$kernel_version/vmlinuz arch/arm64/boot/Image.gz
-    gunzip arch/arm64/boot/Image.gz
+
+    if vmlinuz_is_an_efi_application $ROOTFS_DIR/lib/modules/$kernel_version/vmlinuz; then
+        ensure_command unzboot unzboot
+        unzboot $ROOTFS_DIR/lib/modules/$kernel_version/vmlinuz arch/arm64/boot/Image
+    else
+        cp $ROOTFS_DIR/lib/modules/$kernel_version/vmlinuz arch/arm64/boot/Image.gz
+        gunzip arch/arm64/boot/Image.gz
+    fi;
+
     cp -fr $ROOTFS_DIR/lib/modules/$kernel_version/dtb/* arch/arm64/boot/dts/
 
     if [ -z "$INITRD" ]; then
