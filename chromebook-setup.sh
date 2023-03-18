@@ -10,6 +10,7 @@
 # Based on mali_chromebook-setup_006 scripts by Guillaume Tucker
 #  - https://community.arm.com/arm-community-blogs/b/graphics-gaming-and-vr-blog/posts/linux-on-chromebook-with-arm-mali-gpu
 #
+# shellcheck disable=SC2317  # Don't warn about unreachable commands in this file
 
 # Exit on error. Append "|| true" if you expect an error.
 set -e
