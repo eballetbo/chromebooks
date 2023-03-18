@@ -920,7 +920,7 @@ ensure_command vbutil_kernel vboot-utils
 ensure_command virt-builder guestfs-tools
 
 # Run the command if it's valid, otherwise abort
-type cmd_$cmd > /dev/null 2>&1 || print_usage_exit
-cmd_$cmd "$@"
+type cmd_"$cmd" > /dev/null 2>&1 || print_usage_exit
+cmd_"$cmd" "$@"
 
 exit 0
