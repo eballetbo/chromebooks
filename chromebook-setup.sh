@@ -321,7 +321,7 @@ ensure_command() {
 }
 
 vmlinuz_is_an_efi_application() {
-    file ${1} | grep -qi "PE32+ executable (EFI application)"
+    file "$1" | grep -qi "PE32+ executable (EFI application)"
 }
 
 find_partitions_by_id()
