@@ -294,13 +294,6 @@ case "$ARCH" in
         ;;
 esac
 
-if [ "$ARCH" == "x86_64" ]; then
-    DEBIAN_ROOTFS_URL="$ROOTFS_BASE_URL/debian-gnome-desktop-$DEBIAN_SUITE-amd64.tar.gz"
-else
-    DEBIAN_ROOTFS_URL="$ROOTFS_BASE_URL/debian-gnome-desktop-$DEBIAN_SUITE-$ARCH.tar.gz"
-    [ -z "$CROSS_COMPILE" ] && export CROSS_COMPILE=aarch64-linux-gnu-
-fi
-
 export ARCH
 
 # -----------------------------------------------------------------------------
@@ -494,30 +487,7 @@ cmd_mount_rootfs()
 
 cmd_setup_rootfs()
 {
-    local debian_url
-    local debian_archive
-
-    debian_url="${1:-$DEBIAN_ROOTFS_URL}"
-    debian_archive=$(basename $debian_url)
-
-    echo "$debian_url"
-    if test -d "$debian_url"; then
-        # Copy the rootfs directory.
-        echo "Copying files into the partition"
-        cp -a "$debian_url"/* "$ROOTFS_DIR"
-    else
-        # Download the Debian rootfs archive if it is not already there.
-        if [ ! -f "$debian_archive" ]; then
-            echo "Rootfs archive not found, downloading from $debian_url"
-            curl -OL "$debian_url"
-        fi
-
-        # Untar the rootfs archive.
-        echo "Extracting files onto the partition"
-        tar xf "$debian_archive" -C "$ROOTFS_DIR"
-    fi
-
-    echo "Done."
+    cmd_setup_fedora_rootfs
 }
 
 cmd_get_kernel()
