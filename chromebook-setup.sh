@@ -115,11 +115,8 @@ Available commands:
     Mount the root partition in a local rootfs directory.  The partition
     will remain mounted in order to run other commands.
 
-  setup_rootfs [ARCHIVE]
+  setup_rootfs
     Install the rootfs on the storage device specified with --storage.
-    If ARCHIVE is not provided then the default one will be automatically
-    downloaded and used.  The standard rootfs URL is:
-        $DEBIAN_ROOTFS_URL
 
   deploy_fedora
     prepare media for fedora ARM
