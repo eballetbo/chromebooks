@@ -736,12 +736,15 @@ cmd_setup_copr_fedora_kernel()
 
 cmd_setup_fedora_kernel()
 {
+    local kernel_version
+    local image_path
+
     if [ -z "$IMAGE" ]; then
         echo "Error: a Fedora image was not set."
         exit 1
     fi
 
-    local image_path="$(readlink -f $IMAGE)"
+    image_path="$(readlink -f $IMAGE)"
 
     # Extract and copy the kernel packages to the rootfs
     mkdir ./tmpdir && cd ./tmpdir
@@ -755,7 +758,7 @@ cmd_setup_fedora_kernel()
         fi
     fi
 
-    local kernel_version="$(ls vmlinuz-* | sed -e 's/vmlinuz-//')"
+    kernel_version="$(ls vmlinuz-* | sed -e 's/vmlinuz-//')"
 
     # Generate modules.dep and map files, so modules autoload on first boot
     depmod -b "$ROOTFS_DIR" $kernel_version
