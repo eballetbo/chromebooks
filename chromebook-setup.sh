@@ -141,9 +141,8 @@ Available commands:
     this also copies the kernel packages to the fedora rootfs and generate
     modules.dep and map files, to enable modules autoload on first boot.
 
-  get_kernel [URL]
-    Get the latest kernel source code. The optional URL argument is to
-    specify an alternative Git repository, the default one being:
+  get_kernel
+    Get the latest kernel source code. The default Git repository is:
         $KERNEL_URL
 
   config_kernel
@@ -499,17 +498,14 @@ cmd_setup_rootfs()
 
 cmd_get_kernel()
 {
-    local arg_url
     local tag
 
     echo "Creating initial git repository if not already present..."
 
-    arg_url="${1-$KERNEL_URL}"
-
     # 1. Create initial git repository if not already present
     # 2. Checkout the latest release tagged
     [ -d ${CB_KERNEL_PATH} ] || {
-        git clone "$arg_url" ${CB_KERNEL_PATH}
+        git clone "$KERNEL_URL" ${CB_KERNEL_PATH}
         cd ${CB_KERNEL_PATH}
         tag=$(git describe --abbrev=0 --exclude="*rc*")
         if test ${KERNEL_TAG}; then
