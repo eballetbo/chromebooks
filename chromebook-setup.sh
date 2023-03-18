@@ -557,7 +557,7 @@ cmd_build_kernel()
     cd ${CB_KERNEL_PATH}
 
     # Build kernel + modules + device tree blob
-	make W=1 $(jopt)
+	make W=1 "$(jopt)"
 
     create_fit_image
 
