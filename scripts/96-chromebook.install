@@ -19,6 +19,10 @@ compression="lz4"
 kernel="${KERNEL_IMAGE##*/}-${KERNEL_VERSION}"
 tmpdir="$(mktemp -d /tmp/chromebook-install.XXXX)"
 
+vmlinuz_is_an_efi_application() {
+    file "${1}" | grep -qi "PE32+ executable (EFI application)"
+}
+
 case "$COMMAND" in
     add)
         # Fail early if an initrd was not created for this kernel
@@ -27,8 +31,13 @@ case "$COMMAND" in
         fi
 
         cp -aT "${KERNEL_IMAGE}" "${BOOT_DIR_ABS}/${kernel}"
-        cp -aT "${KERNEL_IMAGE}" "${tmpdir}/${kernel}.gz"
-        gunzip "${tmpdir}/${kernel}.gz"
+
+        if vmlinuz_is_an_efi_application "${KERNEL_IMAGE}"; then
+            unzboot "${KERNEL_IMAGE}" "${tmpdir}/${kernel}"
+        else
+            cp -aT "${KERNEL_IMAGE}" "${tmpdir}/${kernel}.gz"
+            gunzip "${tmpdir}/${kernel}.gz"
+        fi
         ${compression} "${tmpdir}/${kernel}" "${tmpdir}/${kernel}.${compression}" 2> /dev/null
 
         #Fedora kernel generates these device tree
