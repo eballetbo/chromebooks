@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier:  GPL-2.0+
+# Automate Media Creation for Fedora Workstation 37 on ARM Chromebooks
+
+GETFEDORA="https://download.fedoraproject.org/pub/fedora/linux/releases/test/38_Beta/Workstation/aarch64/images/Fedora-Workstation-38_Beta-1.3.aarch64.raw.xz"
+IMAGE=$(basename -s .xz $GETFEDORA)
+MEDIA="$1"
+
+# usage message
+usage() {
+    echo "
+Usage: $(basename ${0}) <media device file (/dev/[sdX|mmcblkX])>
+"
+}
+
+if [ "$MEDIA" = "" ]; then
+    usage
+    exit 1
+fi
+
+if [ ! -f "$IMAGE" ]; then
+    if [ ! -f "$(basename $GETFEDORA)" ]; then
+        curl -OL "$GETFEDORA"
+    fi
+    unxz "$(basename $GETFEDORA)"
+fi
+
+sudo ./chromebook-setup.sh deploy_fedora --architecture=arm64 --storage="$1" --distro=fedora \
+      --image="$IMAGE" --kparams="clk_ignore_unused deferred_probe_timeout=30"

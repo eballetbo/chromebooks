@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier:  GPL-2.0+
+# Automate Media Creation for Fedora Workstation 37 on ARM Chromebooks
+
+GETFEDORA="https://download.fedoraproject.org/pub/fedora/linux/releases/37/Workstation/aarch64/images/Fedora-Workstation-37-1.7.aarch64.raw.xz"
+PKGKERNEL="https://download.copr.fedorainfracloud.org/results/eballetbo/chromebooks/fedora-37-aarch64/05619952-kernel/"
+PKGVERSION="6.2.1-300.3.chromebooks.fc37.aarch64"
+IMAGE=$(basename -s .xz $GETFEDORA)
+MEDIA="$1"
+
+# usage message
+usage() {
+    echo "
+Usage: $(basename ${0}) <media device file (/dev/[sdX|mmcblkX])>
+"
+}
+
+if [ "$MEDIA" = "" ]; then
+    usage
+    exit 1
+fi
+
+if [ ! -f "$IMAGE" ]; then
+    if [ ! -f "$(basename $GETFEDORA)" ]; then
+        curl -OL "$GETFEDORA"
+    fi
+    unxz "$(basename $GETFEDORA)"
+fi
+
+sudo ./chromebook-setup.sh deploy_fedora --architecture=arm64 --storage="$1" --distro=fedora \
+      --image="$IMAGE" --kparams="clk_ignore_unused deferred_probe_timeout=30" \
+      --enable-copr="$PKGKERNEL" --pkgversion="$PKGVERSION"
