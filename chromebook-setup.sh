@@ -391,6 +391,12 @@ create_fit_image()
             dtbs=" \
                 -b arch/arm64/boot/dts/qcom/sc7180-trogdor-coachz-r3.dtb \
                 -b arch/arm64/boot/dts/qcom/sc7180-trogdor-lazor-r3-kb.dtb \
+                -b arch/arm64/boot/dts/qcom/sc7180-trogdor-wormdingler-rev1-inx.dtb \
+                -b arch/arm64/boot/dts/qcom/sc7180-trogdor-wormdingler-rev1-boe-rt5682s.dtb \
+                -b arch/arm64/boot/dts/qcom/sc7180-trogdor-wormdingler-rev1-inx-rt5682s.dtb \
+                -b arch/arm64/boot/dts/qcom/sc7180-trogdor-wormdingler-rev0-boe.dtb \
+                -b arch/arm64/boot/dts/qcom/sc7180-trogdor-wormdingler-rev0-inx.dtb \
+                -b arch/arm64/boot/dts/qcom/sc7180-trogdor-wormdingler-rev1-boe.dtb \
                 -b arch/arm64/boot/dts/rockchip/rk3399-gru-kevin.dtb\
                 -b arch/arm64/boot/dts/rockchip/rk3399-gru-scarlet-inx.dtb \
                 "
@@ -398,6 +404,12 @@ create_fit_image()
             dtbs=" \
                 -b arch/arm64/boot/dts/qcom/sc7180-trogdor-coachz-r3.dtb \
                 -b arch/arm64/boot/dts/qcom/sc7180-trogdor-lazor-r3-kb.dtb \
+                -b arch/arm64/boot/dts/qcom/sc7180-trogdor-wormdingler-rev1-inx.dtb \
+                -b arch/arm64/boot/dts/qcom/sc7180-trogdor-wormdingler-rev1-boe-rt5682s.dtb \
+                -b arch/arm64/boot/dts/qcom/sc7180-trogdor-wormdingler-rev1-inx-rt5682s.dtb \
+                -b arch/arm64/boot/dts/qcom/sc7180-trogdor-wormdingler-rev0-boe.dtb \
+                -b arch/arm64/boot/dts/qcom/sc7180-trogdor-wormdingler-rev0-inx.dtb \
+                -b arch/arm64/boot/dts/qcom/sc7180-trogdor-wormdingler-rev1-boe.dtb \
                 -b arch/arm64/boot/dts/mediatek/mt8173-elm.dtb \
                 -b arch/arm64/boot/dts/mediatek/mt8173-elm-hana.dtb \
                 -b arch/arm64/boot/dts/mediatek/mt8183-kukui-krane-sku176.dtb \

@@ -44,7 +44,13 @@ case "$COMMAND" in
         #FIXME: other existing dtb in /boot/dtb/* doesn't work with the FIT image
         dtbs="-b /boot/dtb-${KERNEL_VERSION}/qcom/sc7180-trogdor-coachz-r3.dtb \
               -b /boot/dtb-${KERNEL_VERSION}/qcom/sc7180-trogdor-lazor-r3-kb.dtb \
-              -b /boot/dtb-${KERNEL_VERSION}/rockchip/rk3399-gru-kevin.dtb\
+              -b /boot/dtb-${KERNEL_VERSION}/qcom/sc7180-trogdor-wormdingler-rev1-inx.dtb \
+              -b /boot/dtb-${KERNEL_VERSION}/qcom/sc7180-trogdor-wormdingler-rev1-boe-rt5682s.dtb \
+              -b /boot/dtb-${KERNEL_VERSION}/qcom/sc7180-trogdor-wormdingler-rev1-inx-rt5682s.dtb \
+              -b /boot/dtb-${KERNEL_VERSION}/qcom/sc7180-trogdor-wormdingler-rev0-boe.dtb \
+              -b /boot/dtb-${KERNEL_VERSION}/qcom/sc7180-trogdor-wormdingler-rev0-inx.dtb \
+              -b /boot/dtb-${KERNEL_VERSION}/qcom/sc7180-trogdor-wormdingler-rev1-boe.dtb \
+              -b /boot/dtb-${KERNEL_VERSION}/rockchip/rk3399-gru-kevin.dtb \
               -b /boot/dtb-${KERNEL_VERSION}/rockchip/rk3399-gru-scarlet-inx.dtb"
 
         mkimage -D "-I dts -O dtb -p 2048" -i "${BOOT_DIR_ABS}/${INITRD}" \
