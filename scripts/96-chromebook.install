@@ -52,7 +52,7 @@ case "$COMMAND" in
               -b /boot/dtb-${KERNEL_VERSION}/qcom/sc7180-trogdor-wormdingler-rev1-boe.dtb \
               -b /boot/dtb-${KERNEL_VERSION}/rockchip/rk3399-gru-kevin.dtb \
               -b /boot/dtb-${KERNEL_VERSION}/rockchip/rk3399-gru-scarlet-inx.dtb \
-              -b "
+              -b /boot/dtb-${KERNEL_VERSION}/mediatek/"
 
         mkimage -D "-I dts -O dtb -p 2048" -i "${BOOT_DIR_ABS}/${INITRD}" \
                 -f auto -A arm64 -O linux -T kernel -C "${compression}" -a 0 \
