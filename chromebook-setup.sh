@@ -417,6 +417,7 @@ create_fit_image()
                 -b arch/arm64/boot/dts/mediatek/mt8183-kukui-jacuzzi-kenzo.dtb \
                 -b arch/arm64/boot/dts/rockchip/rk3399-gru-kevin.dtb\
                 -b arch/arm64/boot/dts/rockchip/rk3399-gru-scarlet-inx.dtb \
+		-b mt8183-kukui-jacuzzi-kappa.dtb \
                 "
          fi
 
