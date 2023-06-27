@@ -868,6 +868,9 @@ cmd_deploy_fedora()
 
 cmd_do_everything()
 {
+    CB_DISTRO=fedora
+
+    cmd_get_fedora_image
     cmd_format_storage
     cmd_mount_rootfs
     cmd_setup_rootfs
