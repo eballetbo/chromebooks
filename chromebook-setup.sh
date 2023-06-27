@@ -287,6 +287,10 @@ case "$ARCH" in
         ;;
     arm64|aarch64)
         ARCH="arm64"
+        if [ "$(uname -m)" = "x86_64" ]; then
+            echo "Building for $ARCH on x86_64 machine, setting cross compilation."
+            [ -z "$CROSS_COMPILE" ] && export CROSS_COMPILE=aarch64-linux-gnu-
+        fi
         ;;
     x86_64|amd64)
         ARCH="x86_64"
