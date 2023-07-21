@@ -48,10 +48,22 @@ enable_dev_usb_boot
 ```sh
 ./chromebook-setup.sh help
 ```
-For example, to create bootable SD card for the Samsung Chromebook Plus (arm64):
+Examples:
+
+1. Create a bootable media for supported aarch64 Chromebooks using a Fedora Workstation
+Rawhide image and install a minimal custom build of the kernel in the image.
 ```sh
-./chromebook-setup.sh do_everything --architecture=arm64 --storage=/dev/sdX
+./chromebook-setup.sh do_everything --architecture=arm64 --storage=/dev/[sdX|mmcblkX]
 ```
 
-The default username and password for the image is debian in lowercase.
+2. Create a bootable media for supported aarch64 Chromebooks using Fedora Workstation 38
+```sh
+tools/image-installer/fedora-workstation-38-aarch64 /dev/[sdX|mmcblkX]
+```
 
+Under the hood, this script downloads an uncompress a Fedora-Workstation-38-1.6 image and runs:
+```sh
+./chromebook-setup.sh deploy_fedora --architecture=arm64 --storage=/dev/[sdX|mmcblkX] --distro=fedora \
+      --image=Fedora-Workstation-38-1.6.aarch64.raw \
+      --kparams="clk_ignore_unused deferred_probe_timeout=30
+```

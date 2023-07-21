@@ -287,6 +287,10 @@ case "$ARCH" in
         ;;
     arm64|aarch64)
         ARCH="arm64"
+        if [ "$(uname -m)" = "x86_64" ]; then
+            echo "Building for $ARCH on x86_64 machine, setting cross compilation."
+            [ -z "$CROSS_COMPILE" ] && export CROSS_COMPILE=aarch64-linux-gnu-
+        fi
         ;;
     x86_64|amd64)
         ARCH="x86_64"
@@ -394,8 +398,6 @@ create_fit_image()
                 -b arch/arm64/boot/dts/qcom/sc7180-trogdor-wormdingler-rev1-inx.dtb \
                 -b arch/arm64/boot/dts/qcom/sc7180-trogdor-wormdingler-rev1-boe-rt5682s.dtb \
                 -b arch/arm64/boot/dts/qcom/sc7180-trogdor-wormdingler-rev1-inx-rt5682s.dtb \
-                -b arch/arm64/boot/dts/qcom/sc7180-trogdor-wormdingler-rev0-boe.dtb \
-                -b arch/arm64/boot/dts/qcom/sc7180-trogdor-wormdingler-rev0-inx.dtb \
                 -b arch/arm64/boot/dts/qcom/sc7180-trogdor-wormdingler-rev1-boe.dtb \
                 -b arch/arm64/boot/dts/rockchip/rk3399-gru-kevin.dtb \
                 -b arch/arm64/boot/dts/rockchip/rk3399-gru-scarlet-inx.dtb \
@@ -408,8 +410,6 @@ create_fit_image()
                 -b arch/arm64/boot/dts/qcom/sc7180-trogdor-wormdingler-rev1-inx.dtb \
                 -b arch/arm64/boot/dts/qcom/sc7180-trogdor-wormdingler-rev1-boe-rt5682s.dtb \
                 -b arch/arm64/boot/dts/qcom/sc7180-trogdor-wormdingler-rev1-inx-rt5682s.dtb \
-                -b arch/arm64/boot/dts/qcom/sc7180-trogdor-wormdingler-rev0-boe.dtb \
-                -b arch/arm64/boot/dts/qcom/sc7180-trogdor-wormdingler-rev0-inx.dtb \
                 -b arch/arm64/boot/dts/qcom/sc7180-trogdor-wormdingler-rev1-boe.dtb \
                 -b arch/arm64/boot/dts/mediatek/mt8173-elm.dtb \
                 -b arch/arm64/boot/dts/mediatek/mt8173-elm-hana.dtb \
@@ -870,6 +870,9 @@ cmd_deploy_fedora()
 
 cmd_do_everything()
 {
+    CB_DISTRO=fedora
+
+    cmd_get_fedora_image
     cmd_format_storage
     cmd_mount_rootfs
     cmd_setup_rootfs
