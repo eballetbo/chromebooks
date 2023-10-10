@@ -328,7 +328,7 @@ find_partitions_by_id()
 {
     unset CB_SETUP_STORAGE1 CB_SETUP_STORAGE2
 
-    for device in /dev/disk/by-id/*; do
+    for device in /dev/disk/by-diskseq/*; do
         if [ "$(realpath $device)" = $CB_SETUP_STORAGE ]; then
             if echo "$device" | grep -q -- "-part[0-9]*$"; then
                 echo "device $MMC must not be a partition part ($device)" 1>&2
@@ -353,7 +353,7 @@ find_partitions_by_id()
 
 wait_for_partitions_to_appear()
 {
-    for device in /dev/disk/by-id/*; do
+    for device in /dev/disk/by-diskseq/*; do
         if [ "$(realpath $device)" = $CB_SETUP_STORAGE ]; then
             if echo "$device" | grep -q -- "-part[0-9]*$"; then
                 echo "device $CB_SETUP_STORAGE must not be a partition part ($device)" 1>&2
