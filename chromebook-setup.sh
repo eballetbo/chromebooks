@@ -346,7 +346,7 @@ find_partitions_by_id()
                     CB_SETUP_STORAGE2=$part
                 fi
             done
-	    break
+            break
         fi
     done
 }
@@ -428,7 +428,7 @@ create_fit_image()
                  -d arch/${ARCH}/boot/$kernel ${initrd} $dtbs \
                  kernel.itb
     else
-	echo "TODO: create x86_64 FIT image, now using a raw image"
+        echo "TODO: create x86_64 FIT image, now using a raw image"
     fi
 }
 
@@ -562,7 +562,7 @@ cmd_build_kernel()
     cd ${CB_KERNEL_PATH}
 
     # Build kernel + modules + device tree blob
-	make W=1 "$(jopt)"
+    make W=1 "$(jopt)"
 
     create_fit_image
 
@@ -622,7 +622,7 @@ cmd_build_vboot()
             ;;
         *)
             echo "Unsupported vboot architecture"
-	    exit 1
+            exit 1
             ;;
     esac
 
@@ -658,9 +658,9 @@ cmd_deploy_vboot()
     else
         if [ "$ARCH" != "x86_64" ]; then
             cp -av $CB_KERNEL_PATH/kernel.itb "$ROOTFS_DIR/boot"
-	    else
+        else
             echo "WARNING: Not implemented for x86_64."
-	    fi
+        fi
     fi
 
     echo "Done."
@@ -759,7 +759,7 @@ cmd_setup_fedora_kernel()
         if [ -z "$COPR" ]; then
             virt-builder --get-kernel "$image_path" -o .
         else
-             cmd_setup_copr_fedora_kernel
+            cmd_setup_copr_fedora_kernel
         fi
     fi
 
@@ -907,14 +907,14 @@ cmd_deploy_kernel_only()
 
 # Ensure sudo user
 if [ "$(whoami)" != "root" ]; then
-        echo "Error: This script requires 'sudo' privileges in order to write to disk & mount media."
-        exit 1
+    echo "Error: This script requires 'sudo' privileges in order to write to disk & mount media."
+    exit 1
 fi
 
 if grep -qi fedora /etc/os-release; then
-  pkg_mgr="dnf"
+    pkg_mgr="dnf"
 else
-  pkg_mgr="apt"
+    pkg_mgr="apt"
 fi
 
 # These commands are required
