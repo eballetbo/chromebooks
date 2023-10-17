@@ -757,7 +757,7 @@ cmd_setup_fedora_kernel()
     # Extract kernel and initramfs images if were not provided
     if [ -z "$KERNEL" ] && [ -z "$INITRD" ]; then
         if [ -z "$COPR" ]; then
-            virt-builder --get-kernel "$image_path" -o .
+            LIBGUESTFS_BACKEND=direct virt-builder --get-kernel "$image_path" -o .
         else
             cmd_setup_copr_fedora_kernel
         fi
