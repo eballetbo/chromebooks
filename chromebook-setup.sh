@@ -926,7 +926,7 @@ ensure_command which which
 ensure_command bc bc
 ensure_command curl curl
 ensure_command findmnt util-linux
-ensure_command realpath realpath
+ensure_command realpath coreutils
 ensure_command sgdisk gdisk
 ensure_command lz4 lz4
 ensure_command mkfs.ext4 e2fsprogs
