@@ -923,6 +923,7 @@ else
 fi
 
 # These commands are required
+ensure_command which which
 ensure_command bc bc
 ensure_command curl curl
 ensure_command findmnt util-linux
