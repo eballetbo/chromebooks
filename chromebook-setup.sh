@@ -486,6 +486,14 @@ cmd_format_storage()
     echo "Done."
 }
 
+find_rootfs()
+{
+    if [ -z "$CB_SETUP_STORAGE2" ]; then
+        find_partitions_by_id
+    fi
+    ROOTFS_DIR="$(findmnt -n -o TARGET --source $CB_SETUP_STORAGE2)"
+}
+
 cmd_mount_rootfs()
 {
     # Skip this command if is not a media device.
@@ -496,7 +504,7 @@ cmd_mount_rootfs()
     echo "Mounting rootfs partition..."
 
     udisksctl mount -b "$CB_SETUP_STORAGE2" > /dev/null 2>&1 || true
-    ROOTFS_DIR="$(findmnt -n -o TARGET --source $CB_SETUP_STORAGE2)"
+    find_rootfs
 
     # Verify that the disk is mounted, otherwise exit
     if [ -z "$ROOTFS_DIR" ]; then exit 1; fi
@@ -771,6 +779,9 @@ cmd_setup_fedora_kernel()
     kernel_version="$(ls vmlinuz-* | sed -e 's/vmlinuz-//')"
 
     # Generate modules.dep and map files, so modules autoload on first boot
+    if [ -z "$ROOTFS_DIR" ]; then
+        find_rootfs
+    fi
     depmod -b "$ROOTFS_DIR" "$kernel_version"
 
     # Create a directory tree similar to the kernel source tree so we can reuse some functions
