@@ -801,6 +801,7 @@ cmd_setup_fedora_kernel()
     if [ -z "$INITRD" ]; then
         # Generate initramfs for the kernel
         # chroot into qemu-aarch-static to generate initramfs for aarch64
+        ensure_command qemu-aarch64-static qemu-user-static-aarch64 qemu-user-static
         mount -t sysfs sysfs "$ROOTFS_DIR/sys"
         mount -t proc proc "$ROOTFS_DIR/proc"
         mount -t tmpfs tmpfs "$ROOTFS_DIR/tmp"
