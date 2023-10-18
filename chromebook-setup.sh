@@ -312,10 +312,15 @@ jopt()
 }
 
 ensure_command() {
-    # ensure_command foo foo-package
+    # ensure_command foo foo-package-fedora [ foo-package-debian ]
     which "$1" 2>/dev/null 1>/dev/null ||
     which "$1" 2>/dev/null 1>/dev/null || (
-        echo "Install required command $1 from package $2, e.g. sudo $pkg_mgr install $2"
+        if grep -qi fedora /etc/os-release; then
+            package="$2"
+        else
+            package="${3:-2}"
+        fi
+        echo "Install required command $1 from package $package, e.g. sudo $pkg_mgr install $package"
         exit 1
     )
 }
