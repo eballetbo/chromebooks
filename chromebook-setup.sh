@@ -792,6 +792,7 @@ cmd_setup_fedora_kernel()
         mount -t devtmpfs devtmpfs "$ROOTFS_DIR/dev"
         cp "$(which qemu-aarch64-static)" "$ROOTFS_DIR/usr/bin"
         cat << EOF | chroot "/var$ROOTFS_DIR" /bin/bash
+        export PATH=/usr/bin:/usr/sbin
         dracut --force -v --add-drivers "ulpi usb-storage phy-qcom-usb-hs-28nm \
         phy-qcom-usb-ss ocmem dwc3 dwc3-of-simple dwc3-pci ehci-platform xhci-plat-hcd \
         i2c-qcom-geni i2c-qup icc-osm-l3 qcom-spmi-pmic phy-qcom-qmp-combo phy-qcom-qusb2 \
