@@ -813,11 +813,11 @@ cmd_setup_fedora_kernel()
         fi
         binfmt_chroot="$ROOTFS_DIR$(sed -n -e '/^interpreter /s/^interpreter //p' /proc/sys/fs/binfmt_misc/"$binfmt_entry")"
         mkdir -p $(dirname "$binfmt_chroot")
+        cp "$(which qemu-aarch64-static)" "$binfmt_chroot"
         mount -t sysfs sysfs "$ROOTFS_DIR/sys"
         mount -t proc proc "$ROOTFS_DIR/proc"
         mount -t tmpfs tmpfs "$ROOTFS_DIR/tmp"
         mount -t devtmpfs devtmpfs "$ROOTFS_DIR/dev"
-        cp "$(which qemu-aarch64-static)" "$binfmt_chroot"
         cat << EOF | chroot "/var$ROOTFS_DIR" /bin/bash
         export PATH=/usr/bin:/usr/sbin
         dracut --force -v --add-drivers "ulpi usb-storage phy-qcom-usb-hs-28nm \
