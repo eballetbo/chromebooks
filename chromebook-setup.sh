@@ -313,7 +313,6 @@ jopt()
 
 ensure_command() {
     # ensure_command foo foo-package-fedora [ foo-package-debian ]
-    which "$1" 2>/dev/null 1>/dev/null ||
     which "$1" 2>/dev/null 1>/dev/null || (
         if grep -qi fedora /etc/os-release; then
             package="$2"
