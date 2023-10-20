@@ -797,7 +797,6 @@ cmd_setup_fedora_kernel()
         phy-qcom-usb-hs qcom_aoss qcom-apcs-ipc-mailbox llcc-qcom nvmem_qfprom smem \
         smp2p dwc3-qcom onboard_usb_hub mmc_block sdhci_msm \
         " /boot/initramfs-$kernel_version.img --kver $kernel_version --kmoddir /lib/modules/$kernel_version
-        exit
 EOF
         cp "$ROOTFS_DIR/boot/initramfs-$kernel_version.img" arch/arm64/boot/
     fi
