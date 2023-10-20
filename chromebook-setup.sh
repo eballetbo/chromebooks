@@ -743,6 +743,8 @@ cmd_setup_fedora_kernel()
 {
     local kernel_version
     local image_path
+    local binfmt_entry
+    local binfmt_chroot
 
     if [ -z "$IMAGE" ]; then
         echo "Error: a Fedora image was not set."
@@ -786,11 +788,20 @@ cmd_setup_fedora_kernel()
         # Generate initramfs for the kernel
         # chroot into qemu-aarch-static to generate initramfs for aarch64
         ensure_command qemu-aarch64-static qemu-user-static-aarch64 qemu-user-static
+        binfmt_entry=$(ls /proc/sys/fs/binfmt_misc/ | grep aarch64 | head -1)
+        if [ -z "$binfmt_entry" ]; then
+            echo 'No aarch64 support found in /proc/sys/fs/binfmt_misc/.'
+            echo 'Make sure binfmt-misc support is enabled in kernel and aarch64 emulator package'
+            echo 'is present (e.g. qemu-user-static-aarch64 on Fedora, qemu-user-static on Debian).'
+            exit 1
+        fi
+        binfmt_chroot="$ROOTFS_DIR$(sed -n -e '/^interpreter /s/^interpreter //p' /proc/sys/fs/binfmt_misc/"$binfmt_entry")"
+        mkdir -p $(dirname "$binfmt_chroot")
         mount -t sysfs sysfs "$ROOTFS_DIR/sys"
         mount -t proc proc "$ROOTFS_DIR/proc"
         mount -t tmpfs tmpfs "$ROOTFS_DIR/tmp"
         mount -t devtmpfs devtmpfs "$ROOTFS_DIR/dev"
-        cp "$(which qemu-aarch64-static)" "$ROOTFS_DIR/usr/bin"
+        cp "$(which qemu-aarch64-static)" "$binfmt_chroot"
         cat << EOF | chroot "/var$ROOTFS_DIR" /bin/bash
         export PATH=/usr/bin:/usr/sbin
         dracut --force -v --add-drivers "ulpi usb-storage phy-qcom-usb-hs-28nm \
