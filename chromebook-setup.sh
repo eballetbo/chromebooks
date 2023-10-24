@@ -703,7 +703,7 @@ cmd_setup_fedora_rootfs()
     loopdev="$(losetup --show -fP $IMAGE)"
     btrfs="${image/raw/btrfs}"
     dd if="${loopdev}p3" of="/var/tmp/$btrfs" conv=fsync status=progress
-    losetup -D
+    losetup -d "$loopdev"
     umount ./tmpdir || true
     rm -rf ./tmpdir && mkdir ./tmpdir
     mount "/var/tmp/$btrfs" ./tmpdir
