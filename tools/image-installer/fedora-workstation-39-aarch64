@@ -25,4 +25,4 @@ if [ ! -f "$IMAGE" ]; then
     unxz "$(basename $GETFEDORA)"
 fi
 
-sudo ./chromebook-setup.sh deploy_fedora --architecture=arm64 --storage="$1" --distro=fedora
+sudo ./chromebook-setup.sh deploy_fedora --architecture=arm64 --storage="$1" --distro=fedora --image="$IMAGE"
