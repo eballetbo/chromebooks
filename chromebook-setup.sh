@@ -11,6 +11,7 @@
 #  - https://community.arm.com/arm-community-blogs/b/graphics-gaming-and-vr-blog/posts/linux-on-chromebook-with-arm-mali-gpu
 #
 # shellcheck disable=SC2317  # Don't warn about unreachable commands in this file
+# shellcheck disable=SC2086  # Double quote to prevent globbing and word splitting
 
 # Exit on error. Append "|| true" if you expect an error.
 set -e
