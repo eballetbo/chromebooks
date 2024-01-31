@@ -835,7 +835,7 @@ cmd_setup_fedora_kernel()
             exit 1
         fi
         binfmt_chroot="$ROOTFS_DIR$(sed -n -e '/^interpreter /s/^interpreter //p' /proc/sys/fs/binfmt_misc/"$binfmt_entry")"
-        mkdir -p $(dirname "$binfmt_chroot")
+        mkdir -p "$(dirname $binfmt_chroot)"
         cp "$(which qemu-aarch64-static)" "$binfmt_chroot"
         mount -t sysfs sysfs "$ROOTFS_DIR/sys"
         mount -t proc proc "$ROOTFS_DIR/proc"
