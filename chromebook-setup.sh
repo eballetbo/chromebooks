@@ -827,6 +827,7 @@ cmd_setup_fedora_kernel()
         # Generate initramfs for the kernel
         # chroot into qemu-aarch-static to generate initramfs for aarch64
         ensure_command qemu-aarch64-static qemu-user-static-aarch64 qemu-user-static
+        # shellcheck disable=SC2010
         binfmt_entry=$(ls /proc/sys/fs/binfmt_misc/ | grep aarch64 | head -1)
         if [ -z "$binfmt_entry" ]; then
             echo 'No aarch64 support found in /proc/sys/fs/binfmt_misc/.'
